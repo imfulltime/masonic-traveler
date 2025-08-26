@@ -1,6 +1,16 @@
 -- Seed data for Masonic Traveler
 -- This script populates the database with test data for development
 
+-- IMPORTANT: For login to work, you must first create users in Supabase Auth
+-- Method 1 (Recommended): Use the setup script
+--   npm run setup:auth-users
+-- 
+-- Method 2 (Manual): Create users in Supabase Dashboard
+--   1. Go to Authentication > Users in your Supabase dashboard
+--   2. Create users with these emails (password: masonic123):
+--      secretary.sf@example.com, brother1@example.com, newbro1@example.com, admin@masonictraveler.com
+--   3. Copy their UUIDs and update the INSERT statements below to match
+
 -- Insert badges first
 INSERT INTO badges (code, label, kind, threshold, icon_url) VALUES
 ('traveling_man', 'Traveling Man', 'visit', 1, '/badges/traveling-man.svg'),

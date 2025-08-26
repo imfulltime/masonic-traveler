@@ -11,7 +11,8 @@
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
     "setup:check": "node scripts/setup-check.js",
-    "setup:supabase": "node scripts/setup-supabase.js"
+    "setup:supabase": "node scripts/setup-supabase.js",
+    "setup:auth-users": "node scripts/create-auth-users.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.4",
