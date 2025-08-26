@@ -50,7 +50,14 @@ export function UpcomingEvents({ userLocation }: UpcomingEventsProps) {
           event.id === eventId 
             ? { 
                 ...event, 
-                user_rsvp: { ...event.user_rsvp, status, event_id: eventId, user_id: '', id: '', created_at: '' },
+                user_rsvp: { 
+                  id: event.user_rsvp?.id || '', 
+                  event_id: eventId, 
+                  user_id: event.user_rsvp?.user_id || '', 
+                  status, 
+                  checkin_time: event.user_rsvp?.checkin_time || null,
+                  created_at: event.user_rsvp?.created_at || new Date().toISOString()
+                },
                 rsvp_count: status === 'yes' 
                   ? (event.rsvp_count || 0) + 1 
                   : Math.max(0, (event.rsvp_count || 0) - 1)

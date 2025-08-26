@@ -1,8 +1,9 @@
 import { supabase } from './supabase';
-import { User, UserRole } from '@/types';
+import { User, UserRole, Lodge } from '@/types';
 
 export interface AuthUser extends User {
   role: UserRole;
+  lodge?: Lodge;
 }
 
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
           id: data.user.id,
           email: data.user.email!,
           first_name: firstName,
-          role: 'brother',
+          role: 'brother' as const,
           is_verified: false,
         });
 
