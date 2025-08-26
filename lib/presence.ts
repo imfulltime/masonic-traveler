@@ -193,6 +193,11 @@ export class PresenceService {
    * Clean up old presence data (run periodically)
    */
   static async cleanupOldPresence() {
+    if (!supabaseAdmin) {
+      console.warn('Cannot cleanup old presence - Supabase admin client not configured');
+      return;
+    }
+    
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
 
     const { error } = await supabaseAdmin

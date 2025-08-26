@@ -170,6 +170,10 @@ export class GamificationService {
     type: 'visit' | 'charity',
     increment: number = 1
   ) {
+    if (!supabaseAdmin) {
+      throw new Error('Admin operations not available - Supabase service role key not configured');
+    }
+    
     // Update counters
     const { data: updatedCounter, error: updateError } = await supabaseAdmin
       .from('counters')
@@ -356,6 +360,11 @@ export class GamificationService {
    * Refresh all leaderboards (should be called periodically)
    */
   static async refreshLeaderboards() {
+    if (!supabaseAdmin) {
+      console.warn('Cannot refresh leaderboards - Supabase admin client not configured');
+      return;
+    }
+    
     try {
       // Refresh global leaderboard
       await supabaseAdmin.rpc('refresh_global_leaderboard');
@@ -376,6 +385,11 @@ export class GamificationService {
    * Manual leaderboard refresh (fallback)
    */
   private static async manualRefreshLeaderboards() {
+    if (!supabaseAdmin) {
+      console.warn('Cannot perform manual refresh - Supabase admin client not configured');
+      return;
+    }
+    
     // Clear existing leaderboards
     await supabaseAdmin.from('leaderboard_global').delete().neq('user_id', '');
     await supabaseAdmin.from('leaderboard_by_gl').delete().neq('user_id', '');

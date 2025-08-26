@@ -1,16 +1,19 @@
 # 🚀 Easy Setup Guide for Masonic Traveler
 
-Your project is now connected to GitHub! Here's what you need to do next:
+Your project is now connected to GitHub and ready for deployment! Here's what you need to do next:
 
 ## ✅ Already Done
 - ✅ GitHub repository: https://github.com/imfulltime/masonic-traveler
-- ✅ All code is pushed to GitHub
+- ✅ All code is pushed to GitHub  
 - ✅ Dependencies are installed
+- ✅ Build process fixed and working
+- ✅ Vercel deployment ready
 
 ## 🔗 Next Steps
 
 ### 1. 🗄️ Set Up Supabase (Database)
 
+#### Quick Setup with Our Script
 1. **Go to [supabase.com](https://supabase.com) and sign up**
 2. **Create a new project**:
    - Project name: `masonic-traveler`
@@ -18,23 +21,30 @@ Your project is now connected to GitHub! Here's what you need to do next:
    - Choose a region close to you
    - Wait 2-3 minutes for setup
 
-3. **Set up the database**:
+3. **Get your API keys**:
+   - Go to "Settings" > "API"
+   - Copy these three values:
+     - **Project URL**: `https://your-project-id.supabase.co`
+     - **anon public key**: The long string  
+     - **service_role key**: Click "Reveal" to see it
+
+4. **Run our automated setup**:
+   ```bash
+   # Add your keys to .env.local first (see step 2 below)
+   npm run setup:supabase
+   ```
+
+#### Manual Setup (Alternative)
+1. **Set up the database**:
    - Go to "SQL Editor" in the left sidebar
    - Click "New query"
    - Copy and paste the entire contents from `supabase/schema.sql`
    - Click "Run"
 
-4. **Add test data (recommended)**:
+2. **Add test data (recommended)**:
    - Create another new query
    - Copy and paste contents from `supabase/seed.sql`
    - Click "Run"
-
-5. **Get your API keys**:
-   - Go to "Settings" > "API"
-   - Copy these three values:
-     - **Project URL**: `https://your-project-id.supabase.co`
-     - **anon public key**: The long string
-     - **service_role key**: Click "Reveal" to see it
 
 ### 2. ⚙️ Configure Environment Variables
 
