@@ -69,7 +69,7 @@ INSERT INTO events (id, lodge_id, type, title, description, start_time, end_time
 
 -- Charity events
 ('e5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'charity', 'Food Bank Volunteer Day', 'Help sort and distribute food at the local food bank', NOW() + INTERVAL '1 day' + INTERVAL '9 hours', NOW() + INTERVAL '1 day' + INTERVAL '13 hours', 'public', 'approved', '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555'),
-('e6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'charity', 'Children\'s Hospital Visit', 'Visit children at local hospital with books and games', NOW() + INTERVAL '6 days' + INTERVAL '10 hours', NOW() + INTERVAL '6 days' + INTERVAL '12 hours', 'public', 'approved', '66666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666'),
+('e6666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666', 'charity', 'Children''s Hospital Visit', 'Visit children at local hospital with books and games', NOW() + INTERVAL '6 days' + INTERVAL '10 hours', NOW() + INTERVAL '6 days' + INTERVAL '12 hours', 'public', 'approved', '66666666-6666-6666-6666-666666666666', '66666666-6666-6666-6666-666666666666'),
 ('e7777777-7777-7777-7777-777777777777', '11111111-1111-1111-1111-111111111111', 'charity', 'Community Clean-up', 'Help clean up the local park and neighborhood', NOW() + INTERVAL '7 days' + INTERVAL '8 hours', NOW() + INTERVAL '7 days' + INTERVAL '12 hours', 'public', 'approved', '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111');
 
 -- Insert sample RSVPs
