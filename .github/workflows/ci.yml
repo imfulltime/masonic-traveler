@@ -117,12 +117,12 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-project-id: ${{ prj_8g3mgHG9ypaAnoNXUzwMxtFVILnr }}
           vercel-args: '--prod'
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ https://cvyoupksreeyjcafjyyi.supabase.co }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2eW91cGtzcmVleWpjYWZqeXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMTYzMjgsImV4cCI6MjA3MTc5MjMyOH0.qFfCUCGSbaZwzPQpLZHGvvXA4_Fgn6WQdTSc9g_NeII }}
+          SUPABASE_SERVICE_ROLE: ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2eW91cGtzcmVleWpjYWZqeXlpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjIxNjMyOCwiZXhwIjoyMDcxNzkyMzI4fQ.l6AEHyZ_zZ8_i_tUCdBAFRfSY6E6xQleEE7i0NAQBwg }}
 
   security-scan:
     runs-on: ubuntu-latest

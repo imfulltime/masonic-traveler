@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = AuthService.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         
         if (session?.user) {
@@ -54,12 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUser = async () => {
     try {
+      console.log('Loading user data...');
       const userData = await AuthService.getCurrentUser();
+      console.log('User data loaded:', userData);
       setUser(userData);
     } catch (error) {
       console.error('Error loading user:', error);
       setUser(null);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };

@@ -19,10 +19,14 @@ export default function LoginPage() {
 
   // Redirect user after authentication based on verification status
   useEffect(() => {
+    console.log('Login redirect useEffect:', { user: !!user, authLoading, isVerified });
     if (user && !authLoading) {
+      console.log('Redirecting user...');
       if (isVerified) {
+        console.log('User is verified, redirecting to dashboard');
         router.push('/dashboard');
       } else {
+        console.log('User not verified, redirecting to verification page');
         router.push('/verification/required');
       }
     }
