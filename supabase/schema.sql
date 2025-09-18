@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
     first_name TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE users (
 );
 
 -- Lodges table
-CREATE TABLE lodges (
+CREATE TABLE IF NOT EXISTS lodges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     number TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE lodges (
 );
 
 -- Lodge secretaries junction table
-CREATE TABLE lodge_secretaries (
+CREATE TABLE IF NOT EXISTS lodge_secretaries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     lodge_id UUID NOT NULL REFERENCES lodges(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -43,7 +43,7 @@ CREATE TABLE lodge_secretaries (
 );
 
 -- Events table
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     lodge_id UUID NOT NULL REFERENCES lodges(id) ON DELETE CASCADE,
     type TEXT CHECK (type IN ('meeting', 'charity')) NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE events (
 );
 
 -- Event RSVPs table
-CREATE TABLE event_rsvps (
+CREATE TABLE IF NOT EXISTS event_rsvps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -70,7 +70,7 @@ CREATE TABLE event_rsvps (
 );
 
 -- Verifications table
-CREATE TABLE verifications (
+CREATE TABLE IF NOT EXISTS verifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     subject_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     method TEXT CHECK (method IN ('secretary', 'vouch')) NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE verifications (
 );
 
 -- Vouches table (supporting evidence for vouch verifications)
-CREATE TABLE vouches (
+CREATE TABLE IF NOT EXISTS vouches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     verification_id UUID NOT NULL REFERENCES verifications(id) ON DELETE CASCADE,
     voucher_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -91,7 +91,7 @@ CREATE TABLE vouches (
 );
 
 -- Presence table (fuzzed coordinates)
-CREATE TABLE presence (
+CREATE TABLE IF NOT EXISTS presence (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     approx_lat DOUBLE PRECISION NOT NULL,
@@ -102,13 +102,13 @@ CREATE TABLE presence (
 );
 
 -- Conversations table
-CREATE TABLE conversations (
+CREATE TABLE IF NOT EXISTS conversations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Conversation participants table
-CREATE TABLE conversation_participants (
+CREATE TABLE IF NOT EXISTS conversation_participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -117,7 +117,7 @@ CREATE TABLE conversation_participants (
 );
 
 -- Messages table
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -126,7 +126,7 @@ CREATE TABLE messages (
 );
 
 -- Visit confirmations table
-CREATE TABLE visit_confirmations (
+CREATE TABLE IF NOT EXISTS visit_confirmations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     lodge_id UUID NOT NULL REFERENCES lodges(id),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -136,7 +136,7 @@ CREATE TABLE visit_confirmations (
 );
 
 -- Charity confirmations table
-CREATE TABLE charity_confirmations (
+CREATE TABLE IF NOT EXISTS charity_confirmations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID NOT NULL REFERENCES events(id),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -146,7 +146,7 @@ CREATE TABLE charity_confirmations (
 );
 
 -- Counters table
-CREATE TABLE counters (
+CREATE TABLE IF NOT EXISTS counters (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     visits INTEGER DEFAULT 0,
@@ -156,7 +156,7 @@ CREATE TABLE counters (
 );
 
 -- Badges table
-CREATE TABLE badges (
+CREATE TABLE IF NOT EXISTS badges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code TEXT UNIQUE NOT NULL,
     label TEXT NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE badges (
 );
 
 -- User badges table
-CREATE TABLE user_badges (
+CREATE TABLE IF NOT EXISTS user_badges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     badge_id UUID NOT NULL REFERENCES badges(id) ON DELETE CASCADE,
@@ -175,7 +175,7 @@ CREATE TABLE user_badges (
 );
 
 -- Leaderboard tables (materialized views)
-CREATE TABLE leaderboard_global (
+CREATE TABLE IF NOT EXISTS leaderboard_global (
     user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     visits INTEGER NOT NULL,
     charity INTEGER NOT NULL,
@@ -183,7 +183,7 @@ CREATE TABLE leaderboard_global (
     rank INTEGER NOT NULL
 );
 
-CREATE TABLE leaderboard_by_gl (
+CREATE TABLE IF NOT EXISTS leaderboard_by_gl (
     grand_lodge TEXT NOT NULL,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     visits INTEGER NOT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE leaderboard_by_gl (
     PRIMARY KEY (grand_lodge, user_id)
 );
 
-CREATE TABLE leaderboard_by_district (
+CREATE TABLE IF NOT EXISTS leaderboard_by_district (
     district TEXT NOT NULL,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     visits INTEGER NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE leaderboard_by_district (
 );
 
 -- Marketplace/businesses table
-CREATE TABLE businesses (
+CREATE TABLE IF NOT EXISTS businesses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     category TEXT NOT NULL,
@@ -216,44 +216,58 @@ CREATE TABLE businesses (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Foreign key constraints
-ALTER TABLE users ADD CONSTRAINT fk_users_lodge FOREIGN KEY (lodge_id) REFERENCES lodges(id);
-ALTER TABLE lodges ADD CONSTRAINT fk_lodges_created_by FOREIGN KEY (created_by) REFERENCES users(id);
+-- Foreign key constraints (conditional)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_users_lodge'
+    ) THEN
+        ALTER TABLE users ADD CONSTRAINT fk_users_lodge FOREIGN KEY (lodge_id) REFERENCES lodges(id);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_lodges_created_by'
+    ) THEN
+        ALTER TABLE lodges ADD CONSTRAINT fk_lodges_created_by FOREIGN KEY (created_by) REFERENCES users(id);
+    END IF;
+END $$;
 
 -- Indexes for performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_lodge_id ON users(lodge_id);
-CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_is_verified ON users(is_verified);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_lodge_id ON users(lodge_id);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_is_verified ON users(is_verified);
 
-CREATE INDEX idx_lodges_grand_lodge ON lodges(grand_lodge);
-CREATE INDEX idx_lodges_district ON lodges(district);
-CREATE INDEX idx_lodges_city ON lodges(city);
-CREATE INDEX idx_lodges_location ON lodges USING GIST (ST_Point(lng, lat));
+CREATE INDEX IF NOT EXISTS idx_lodges_grand_lodge ON lodges(grand_lodge);
+CREATE INDEX IF NOT EXISTS idx_lodges_district ON lodges(district);
+CREATE INDEX IF NOT EXISTS idx_lodges_city ON lodges(city);
+CREATE INDEX IF NOT EXISTS idx_lodges_location ON lodges USING GIST (ST_Point(lng, lat));
 
-CREATE INDEX idx_events_lodge_id ON events(lodge_id);
-CREATE INDEX idx_events_type ON events(type);
-CREATE INDEX idx_events_start_time ON events(start_time);
-CREATE INDEX idx_events_status ON events(status);
+CREATE INDEX IF NOT EXISTS idx_events_lodge_id ON events(lodge_id);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(type);
+CREATE INDEX IF NOT EXISTS idx_events_start_time ON events(start_time);
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
 
-CREATE INDEX idx_event_rsvps_event_id ON event_rsvps(event_id);
-CREATE INDEX idx_event_rsvps_user_id ON event_rsvps(user_id);
+CREATE INDEX IF NOT EXISTS idx_event_rsvps_event_id ON event_rsvps(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_rsvps_user_id ON event_rsvps(user_id);
 
-CREATE INDEX idx_verifications_subject_user_id ON verifications(subject_user_id);
-CREATE INDEX idx_verifications_status ON verifications(status);
+CREATE INDEX IF NOT EXISTS idx_verifications_subject_user_id ON verifications(subject_user_id);
+CREATE INDEX IF NOT EXISTS idx_verifications_status ON verifications(status);
 
-CREATE INDEX idx_presence_user_id ON presence(user_id);
-CREATE INDEX idx_presence_location ON presence USING GIST (ST_Point(approx_lng, approx_lat));
-CREATE INDEX idx_presence_last_seen ON presence(last_seen);
+CREATE INDEX IF NOT EXISTS idx_presence_user_id ON presence(user_id);
+CREATE INDEX IF NOT EXISTS idx_presence_location ON presence USING GIST (ST_Point(approx_lng, approx_lat));
+CREATE INDEX IF NOT EXISTS idx_presence_last_seen ON presence(last_seen);
 
-CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX idx_messages_created_at ON messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
 
-CREATE INDEX idx_counters_user_id ON counters(user_id);
-CREATE INDEX idx_user_badges_user_id ON user_badges(user_id);
+CREATE INDEX IF NOT EXISTS idx_counters_user_id ON counters(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_badges_user_id ON user_badges(user_id);
 
-CREATE INDEX idx_businesses_category ON businesses(category);
-CREATE INDEX idx_businesses_city ON businesses(city);
+CREATE INDEX IF NOT EXISTS idx_businesses_category ON businesses(category);
+CREATE INDEX IF NOT EXISTS idx_businesses_city ON businesses(city);
 
 -- Updated_at triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -264,12 +278,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_lodges_updated_at ON lodges;
 CREATE TRIGGER update_lodges_updated_at BEFORE UPDATE ON lodges
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_counters_updated_at ON counters;
 CREATE TRIGGER update_counters_updated_at BEFORE UPDATE ON counters
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
