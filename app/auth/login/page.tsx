@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
@@ -14,8 +14,19 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signInWithMagicLink } = useAuth();
+  const { signIn, signInWithMagicLink, user, loading: authLoading, isVerified } = useAuth();
   const router = useRouter();
+
+  // Redirect user after authentication based on verification status
+  useEffect(() => {
+    if (user && !authLoading) {
+      if (isVerified) {
+        router.push('/dashboard');
+      } else {
+        router.push('/verification/required');
+      }
+    }
+  }, [user, authLoading, isVerified, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +40,7 @@ export default function LoginPage() {
         setSuccess('Magic link sent! Check your email to sign in.');
       } else {
         await signIn(email, password);
-        router.push('/dashboard');
+        // Redirect will be handled by useEffect when user state updates
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign in');

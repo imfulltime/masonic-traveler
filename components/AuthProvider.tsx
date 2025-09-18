@@ -68,6 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       await AuthService.signIn(email, password);
+      // Don't setLoading(false) here - let the auth state change handle it
+      // This ensures the user state is fully loaded before loading becomes false
     } catch (error) {
       setLoading(false);
       throw error;
