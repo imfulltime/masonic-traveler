@@ -75,6 +75,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) - you should see the Masonic Traveler landing page!
 
+#### Automated testing
+
+```bash
+# Copy baseline test env vars if you don't have Supabase credentials yet
+cp .env.test .env.local
+
+# Run the unit/component test suite
+npm run test
+
+# Execute Playwright scenarios (dev server must be running)
+npm run test:e2e
+```
+
 ### 4. 🚀 Deploy to Vercel
 
 1. **Go to [vercel.com](https://vercel.com) and sign up with GitHub**

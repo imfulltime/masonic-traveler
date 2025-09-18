@@ -121,6 +121,8 @@ A privacy-first Progressive Web App (PWA) that helps verified Masons connect wit
 
 ## 🧪 Testing
 
+Copy `.env.test` to `.env.local` (or export the same variables) before running automated suites if you don't have Supabase credentials handy. The mocked clients used in unit tests work without a live backend, while Playwright can run against the dev server bootstrapped with these defaults.
+
 ### Unit Tests
 ```bash
 npm run test
@@ -128,11 +130,15 @@ npm run test:watch
 npm run test -- --coverage
 ```
 
+The suite now includes coverage for guarded routes, the nearby brethren map, upcoming events, and the dashboard messaging experience. You can target specific files via `npm run test -- components/NearbyBrethrenMap.test.tsx` when iterating locally.
+
 ### E2E Tests
 ```bash
 npm run test:e2e
 npm run test:e2e:headed
 ```
+
+New Playwright scenarios in `e2e/dashboard-access.spec.ts` verify unauthenticated redirects and the verification flow. Ensure the dev server is running (`npm run dev`) before invoking the command; CI will handle this automatically via the configured webServer hook.
 
 ### Linting
 ```bash
