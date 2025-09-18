@@ -14,6 +14,7 @@ interface NearbyBrethrenMapProps {
 export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
+  const markersRef = useRef<Marker[]>([]);
   const [nearbyBrethren, setNearbyBrethren] = useState<NearbyBrother[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -54,6 +55,9 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
     map.current.addControl(new NavigationControl(), 'top-right');
 
     return () => {
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
       map.current?.remove();
     };
   }, [userLocation]);
@@ -61,7 +65,7 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
   useEffect(() => {
     loadNearbyBrethren();
     updatePresence();
-  }, [userLocation]);
+  }, [userLocation.lat, userLocation.lng]);
 
   const updatePresence = async () => {
     try {
@@ -74,10 +78,15 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
   const loadNearbyBrethren = async () => {
     try {
       setLoading(true);
+      setError('');
       const brethren = await PresenceService.getNearbyBrethren(userLocation);
       setNearbyBrethren(brethren);
       
       if (map.current) {
+        // Clear existing markers
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
+
         // Add markers for nearby brethren
         brethren.forEach((brother) => {
           // Create marker element
@@ -111,10 +120,11 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
             setSelectedBrother(brother);
           });
 
-          // Add marker to map
-          new Marker({ element: el })
+          // Add marker to map and store reference
+          const marker = new Marker({ element: el })
             .setLngLat(brother.approx_circle.center)
             .addTo(map.current!);
+          markersRef.current.push(marker);
         });
 
         // Add user location marker
@@ -128,11 +138,13 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         `;
         
-        new Marker({ element: userEl })
+        const userMarker = new Marker({ element: userEl })
           .setLngLat([userLocation.lng, userLocation.lat])
           .addTo(map.current!);
+        markersRef.current.push(userMarker);
       }
     } catch (err: any) {
+      console.error('Error loading nearby brethren:', err);
       setError(err.message || 'Error loading nearby brethren');
     } finally {
       setLoading(false);

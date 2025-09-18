@@ -26,14 +26,16 @@ export function UpcomingEvents({ userLocation }: UpcomingEventsProps) {
 
   useEffect(() => {
     loadEvents();
-  }, [userLocation]);
+  }, [userLocation.lat, userLocation.lng]);
 
   const loadEvents = async () => {
     try {
       setLoading(true);
+      setError('');
       const upcomingEvents = await EventsService.getUpcomingEvents(userLocation);
       setEvents(upcomingEvents);
     } catch (err: any) {
+      console.error('Error loading events:', err);
       setError(err.message || 'Error loading events');
     } finally {
       setLoading(false);

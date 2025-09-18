@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { NearbyBrethrenMap } from '@/components/NearbyBrethrenMap';
 import { UpcomingEvents } from '@/components/UpcomingEvents';
 import { useAuth } from '@/components/AuthProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MapPin, Calendar, Users } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -77,7 +78,9 @@ export default function DashboardPage() {
             </button>
           </div>
         ) : location ? (
-          <NearbyBrethrenMap userLocation={location} />
+          <ErrorBoundary>
+            <NearbyBrethrenMap userLocation={location} />
+          </ErrorBoundary>
         ) : (
           <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
             <div className="text-center">
@@ -96,7 +99,9 @@ export default function DashboardPage() {
         </div>
 
         {location ? (
-          <UpcomingEvents userLocation={location} />
+          <ErrorBoundary>
+            <UpcomingEvents userLocation={location} />
+          </ErrorBoundary>
         ) : (
           <div className="bg-gray-100 rounded-lg p-4">
             <p className="text-gray-600 text-center">
