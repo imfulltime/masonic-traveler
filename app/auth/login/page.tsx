@@ -14,23 +14,17 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signInWithMagicLink, user, loading: authLoading, isVerified } = useAuth();
+  const { signIn, signInWithMagicLink, user, session, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // Redirect user after authentication based on verification status
   useEffect(() => {
-    console.log('Login redirect useEffect:', { user: !!user, authLoading, isVerified });
-    if (user && !authLoading) {
-      console.log('Redirecting user...');
-      if (isVerified) {
-        console.log('User is verified, redirecting to dashboard');
-        router.push('/dashboard');
-      } else {
-        console.log('User not verified, redirecting to verification page');
-        router.push('/verification/required');
-      }
+    console.log('Login redirect useEffect:', { hasSession: !!session, hasUser: !!user, authLoading });
+    if (session && !authLoading) {
+      console.log('Session present, redirecting to dashboard');
+      router.replace('/dashboard');
     }
-  }, [user, authLoading, isVerified, router]);
+  }, [session, user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +38,8 @@ export default function LoginPage() {
         setSuccess('Magic link sent! Check your email to sign in.');
       } else {
         await signIn(email, password);
-        // Redirect will be handled by useEffect when user state updates
+        // Fallback: redirect immediately after sign-in; dashboard will gate content
+        router.replace('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign in');
