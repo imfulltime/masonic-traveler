@@ -103,7 +103,16 @@ export class AuthService {
       .eq('id', session.user.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Enhanced error handling for policy issues
+      if (error.message?.includes('infinite recursion')) {
+        throw new Error('Database policy error: infinite recursion detected. Please check RLS policies.');
+      }
+      if (error.message?.includes('policy')) {
+        throw new Error('Database policy error: ' + error.message);
+      }
+      throw error;
+    }
     return user as AuthUser;
   }
 

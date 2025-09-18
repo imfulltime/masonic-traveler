@@ -23,6 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadUserAttempts, setLoadUserAttempts] = useState(0);
+  const MAX_LOAD_ATTEMPTS = 3;
 
   useEffect(() => {
     // Get initial session
@@ -54,13 +56,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loadUser = async () => {
+    // Prevent infinite retry loops
+    if (loadUserAttempts >= MAX_LOAD_ATTEMPTS) {
+      console.warn('Max load user attempts reached, stopping retries');
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log('Loading user data...');
+      console.log(`Loading user data... (attempt ${loadUserAttempts + 1}/${MAX_LOAD_ATTEMPTS})`);
+      setLoadUserAttempts(prev => prev + 1);
+      
       const userData = await AuthService.getCurrentUser();
       console.log('User data loaded:', userData);
       setUser(userData);
+      
+      // Reset attempts on success
+      setLoadUserAttempts(0);
     } catch (error) {
       console.error('Error loading user:', error);
+      // Don't retry on infinite recursion or policy errors
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = error.message as string;
+        if (errorMessage.includes('infinite recursion') || errorMessage.includes('policy')) {
+          console.warn('Policy error detected, stopping retries. User will need to refresh after DB fix.');
+          setLoadUserAttempts(MAX_LOAD_ATTEMPTS); // Stop further attempts
+        }
+      }
       setUser(null);
     } finally {
       console.log('Setting loading to false');
