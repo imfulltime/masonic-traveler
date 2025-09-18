@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#0ea5e9"/>
+  <rect x="102.4" y="102.4" width="307.2" height="307.2" fill="white" stroke="#0ea5e9" stroke-width="2"/>
+  <text x="256" y="281.6" text-anchor="middle" fill="#0ea5e9" font-family="Arial, sans-serif" font-size="76.8" font-weight="bold">MT</text>
+</svg>
