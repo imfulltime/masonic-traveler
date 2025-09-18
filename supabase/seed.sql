@@ -24,7 +24,7 @@ INSERT INTO badges (code, label, kind, threshold, icon_url) VALUES
 -- Insert sample users first (without lodge_id to avoid circular dependency)
 INSERT INTO users (id, email, first_name, obfuscated_handle, lodge_id, role, is_verified) VALUES
 -- Secretaries (verified by default) - lodge_id will be updated later
-('11111111-1111-1111-1111-111111111111', 'secretary.sf@example.com', 'Robert', 'RSF001', null, 'secretary', true),
+('53ce454d-aa61-4fa6-b3a0-0ec4d8747e30', 'secretary.sf@example.com', 'Robert', 'RSF001', null, 'secretary', true),
 ('22222222-2222-2222-2222-222222222222', 'secretary.la@example.com', 'Michael', 'MLA002', null, 'secretary', true),
 ('33333333-3333-3333-3333-333333333333', 'secretary.ny@example.com', 'David', 'DNY003', null, 'secretary', true),
 ('44444444-4444-4444-4444-444444444444', 'secretary.bk@example.com', 'James', 'JBK004', null, 'secretary', true),
@@ -32,7 +32,7 @@ INSERT INTO users (id, email, first_name, obfuscated_handle, lodge_id, role, is_
 ('66666666-6666-6666-6666-666666666666', 'secretary.dal@example.com', 'John', 'JDal006', null, 'secretary', true),
 
 -- Regular brothers (lodge_id will be updated later)
-('77777777-7777-7777-7777-777777777777', 'brother1@example.com', 'Thomas', 'TSF007', null, 'brother', true),
+('743e5fa2-4374-4ed1-8c7e-dc997e7cd7a4', 'brother1@example.com', 'Thomas', 'TSF007', null, 'brother', true),
 ('88888888-8888-8888-8888-888888888888', 'brother2@example.com', 'Charles', 'CLA008', null, 'brother', true),
 ('99999999-9999-9999-9999-999999999999', 'brother3@example.com', 'Andrew', 'ANY009', null, 'brother', true),
 ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'brother4@example.com', 'Richard', 'RBK010', null, 'brother', true),
@@ -40,16 +40,16 @@ INSERT INTO users (id, email, first_name, obfuscated_handle, lodge_id, role, is_
 ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'brother6@example.com', 'Joseph', 'JDal012', null, 'brother', true),
 
 -- Unverified brothers (lodge_id will be updated later)
-('dddddddd-dddd-dddd-dddd-dddddddddddd', 'newbro1@example.com', 'Matthew', 'MSF013', null, 'brother', false),
+('19aa452d-7f34-47af-875b-dbdbfcd92922', 'newbro1@example.com', 'Matthew', 'MSF013', null, 'brother', false),
 ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'newbro2@example.com', 'Christopher', 'CLA014', null, 'brother', false),
 
 -- Admin
-('ffffffff-ffff-ffff-ffff-ffffffffffff', 'admin@masonictraveler.com', 'Admin', 'Admin', null, 'admin', true);
+('79cd5d69-3c66-45d2-b3e4-998a24236535', 'admin@masonictraveler.com', 'Admin', 'Admin', null, 'admin', true);
 
 -- Insert sample lodges (now that users exist)
 INSERT INTO lodges (id, name, number, grand_lodge, district, address, city, country, lat, lng, created_by) VALUES
 -- Grand Lodge of California
-('11111111-1111-1111-1111-111111111111', 'San Francisco Lodge', '3', 'California', 'District 1', '1111 California St', 'San Francisco', 'USA', 37.7749, -122.4194, '11111111-1111-1111-1111-111111111111'),
+('11111111-1111-1111-1111-111111111111', 'San Francisco Lodge', '3', 'California', 'District 1', '1111 California St', 'San Francisco', 'USA', 37.7749, -122.4194, '53ce454d-aa61-4fa6-b3a0-0ec4d8747e30'),
 ('22222222-2222-2222-2222-222222222222', 'Los Angeles Lodge', '42', 'California', 'District 2', '123 Hope St', 'Los Angeles', 'USA', 34.0522, -118.2437, '22222222-2222-2222-2222-222222222222'),
 
 -- Grand Lodge of New York
@@ -61,7 +61,7 @@ INSERT INTO lodges (id, name, number, grand_lodge, district, address, city, coun
 ('66666666-6666-6666-6666-666666666666', 'Dallas Lodge', '14', 'Texas', 'District 2', '1314 Elm St', 'Dallas', 'USA', 32.7767, -96.7970, '66666666-6666-6666-6666-666666666666');
 
 -- Update users with their lodge_id now that lodges exist
-UPDATE users SET lodge_id = '11111111-1111-1111-1111-111111111111' WHERE id IN ('11111111-1111-1111-1111-111111111111', '77777777-7777-7777-7777-777777777777', 'dddddddd-dddd-dddd-dddd-dddddddddddd');
+UPDATE users SET lodge_id = '11111111-1111-1111-1111-111111111111' WHERE id IN ('53ce454d-aa61-4fa6-b3a0-0ec4d8747e30', '743e5fa2-4374-4ed1-8c7e-dc997e7cd7a4', '19aa452d-7f34-47af-875b-dbdbfcd92922');
 UPDATE users SET lodge_id = '22222222-2222-2222-2222-222222222222' WHERE id IN ('22222222-2222-2222-2222-222222222222', '88888888-8888-8888-8888-888888888888', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
 UPDATE users SET lodge_id = '33333333-3333-3333-3333-333333333333' WHERE id IN ('33333333-3333-3333-3333-333333333333', '99999999-9999-9999-9999-999999999999');
 UPDATE users SET lodge_id = '44444444-4444-4444-4444-444444444444' WHERE id IN ('44444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
@@ -70,7 +70,7 @@ UPDATE users SET lodge_id = '66666666-6666-6666-6666-666666666666' WHERE id IN (
 
 -- Insert lodge secretaries relationships
 INSERT INTO lodge_secretaries (lodge_id, user_id) VALUES
-('11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111'),
+('11111111-1111-1111-1111-111111111111', '53ce454d-aa61-4fa6-b3a0-0ec4d8747e30'),
 ('22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222'),
 ('33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333'),
 ('44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444'),
