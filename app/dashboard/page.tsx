@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { NearbyBrethrenMap } from '@/components/NearbyBrethrenMap';
 import { UpcomingEvents } from '@/components/UpcomingEvents';
 import { useAuth } from '@/components/AuthProvider';
@@ -9,6 +10,7 @@ import { MapPin, Calendar, Users } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, isVerified } = useAuth();
+  const router = useRouter();
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string>('');
 
@@ -50,7 +52,10 @@ export default function DashboardPage() {
           <p className="text-yellow-700 mb-4">
             You need to be verified by a Lodge Secretary to access the full features of Masonic Traveler.
           </p>
-          <button className="btn-primary">
+          <button
+            className="btn-primary"
+            onClick={() => router.push('/verification/required')}
+          >
             Request Verification
           </button>
         </div>

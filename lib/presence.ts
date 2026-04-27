@@ -156,37 +156,24 @@ export class PresenceService {
     const canSend = await this.canSendIntroRequest(targetUserId);
     if (!canSend) throw new Error('Cannot send intro request to this user');
 
-    // Create conversation
-    const { data: conversation, error: convoError } = await supabase
-      .from('conversations')
-      .insert({})
-      .select()
-      .single();
+    // Create or get conversation via SECURITY DEFINER function (bypasses RLS)
+    const { data: conversationId, error: convoError } = await supabase
+      .rpc('create_or_get_conversation', { target_user_id: targetUserId });
 
     if (convoError) throw convoError;
 
-    // Add participants
-    const { error: participantsError } = await supabase
-      .from('conversation_participants')
-      .insert([
-        { conversation_id: conversation.id, user_id: session.data.session.user.id },
-        { conversation_id: conversation.id, user_id: targetUserId },
-      ]);
-
-    if (participantsError) throw participantsError;
-
-    // Send initial message
+    // Send initial greeting message
     const { error: messageError } = await supabase
       .from('messages')
       .insert({
-        conversation_id: conversation.id,
+        conversation_id: conversationId,
         sender_id: session.data.session.user.id,
         body: message,
       });
 
     if (messageError) throw messageError;
 
-    return conversation;
+    return { id: conversationId };
   }
 
   /**

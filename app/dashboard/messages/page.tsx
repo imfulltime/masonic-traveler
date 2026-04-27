@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MessagingService } from '@/lib/messaging';
 import { useAuth } from '@/components/AuthProvider';
 import { ConversationWithParticipants } from '@/types';
 import { formatDate, formatTime } from '@/lib/utils';
-import { MessageCircle, Search, Users } from 'lucide-react';
+import { MessageCircle, Search, Users, MapPin } from 'lucide-react';
 
 export default function MessagesPage() {
+  const router = useRouter();
   const { user, isVerified } = useAuth();
   const [conversations, setConversations] = useState<ConversationWithParticipants[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,7 @@ export default function MessagesPage() {
     );
     
     return displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           conversation.last_message?.body.toLowerCase().includes(searchQuery.toLowerCase());
+           (conversation.last_message?.body ?? '').toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const formatMessageTime = (dateString: string) => {
@@ -157,8 +160,7 @@ export default function MessagesPage() {
                 key={conversation.id}
                 className="card hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => {
-                  // Navigate to conversation detail
-                  window.location.href = `/dashboard/messages/${conversation.id}`;
+                  router.push(`/dashboard/messages/${conversation.id}`);
                 }}
               >
                 <div className="flex items-center space-x-3">
@@ -173,7 +175,7 @@ export default function MessagesPage() {
                       </h3>
                       {conversation.last_message && (
                         <span className="text-xs text-gray-500">
-                          {formatMessageTime(conversation.last_message.created_at)}
+                          {formatMessageTime(conversation.last_message.created_at || '')}
                         </span>
                       )}
                     </div>
@@ -200,12 +202,18 @@ export default function MessagesPage() {
       {conversations.length === 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">How to start a conversation</h4>
-          <ol className="text-sm text-blue-700 space-y-1">
+          <ol className="text-sm text-blue-700 space-y-1 mb-4">
             <li>1. Go to the "Nearby" tab to see brethren in your area</li>
-            <li>2. Tap the message button next to a brother's name</li>
-            <li>3. Send a greeting to introduce yourself</li>
-            <li>4. Once accepted, you can chat freely</li>
+            <li>2. Tap the "Message" button next to a brother's name</li>
+            <li>3. Your conversation will open instantly</li>
           </ol>
+          <Link
+            href="/dashboard/nearby"
+            className="inline-flex items-center space-x-2 btn-primary text-sm"
+          >
+            <MapPin className="h-4 w-4" />
+            <span>Find Nearby Brethren</span>
+          </Link>
         </div>
       )}
     </div>

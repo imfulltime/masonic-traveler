@@ -201,7 +201,7 @@ export default function ConversationPage() {
                   <p className={`text-xs text-gray-500 mt-1 ${
                     isOwn ? 'text-right' : 'text-left'
                   }`}>
-                    {formatTime(message.created_at)}
+                    {formatTime(message.created_at || '')}
                   </p>
                 </div>
               </div>

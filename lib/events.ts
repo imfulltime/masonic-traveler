@@ -71,7 +71,7 @@ export class EventsService {
 
       if (distance <= radiusKm) {
         const rsvps = event.rsvps || [];
-        const userRsvp = rsvps.find((r: any) => r.user_id === session.data.session.user.id);
+        const userRsvp = rsvps.find((r: any) => r.user_id === session.data.session!.user.id);
 
         nearbyEvents.push({
           ...event,
@@ -79,7 +79,7 @@ export class EventsService {
           rsvp_count: rsvps.filter((r: any) => r.status === 'yes').length,
           user_rsvp: userRsvp || undefined,
           distance_km: Math.round(distance * 10) / 10,
-        } as EventWithLodge & { distance_km: number });
+        } as unknown as EventWithLodge & { distance_km: number });
       }
     }
 
@@ -196,18 +196,50 @@ export class EventsService {
       throw new Error('Only verified users can create events');
     }
 
-    const { data, error } = await supabase
+    const userId = session.data.session.user.id;
+
+    // Auto-approve if the creator is a secretary for this lodge
+    const { data: isSecretary } = await supabase
+      .from('lodge_secretaries')
+      .select('id')
+      .eq('lodge_id', eventData.lodge_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const status = isSecretary ? 'approved' : 'pending';
+
+    const { error } = await supabase
       .from('events')
       .insert({
         ...eventData,
-        created_by: session.data.session.user.id,
-        status: 'pending', // Requires secretary approval
-      })
-      .select()
-      .single();
+        created_by: userId,
+        status,
+        ...(isSecretary ? { approved_by: userId } : {}),
+      });
 
     if (error) throw error;
-    return data;
+    return { status };
+  }
+
+  /**
+   * Get events created by the current user that are still pending approval
+   */
+  static async getMyPendingEvents(): Promise<any[]> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session?.user) return [];
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        id, title, type, start_time, end_time, status, visibility, description,
+        lodge:lodge_id (id, name, number, grand_lodge)
+      `)
+      .eq('created_by', session.data.session.user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   }
 
   /**

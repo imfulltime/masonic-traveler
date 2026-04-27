@@ -1,8 +1,8 @@
 'use client';
 
-import { AuthProvider } from '@/components/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { DashboardNav } from '@/components/DashboardNav';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
 export default function DashboardLayout({
   children,
@@ -10,15 +10,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <ProtectedRoute requireAuth requireVerified>
-        <div className="min-h-screen bg-gray-50">
-          <DashboardNav />
-          <main className="pb-20">
-            {children}
-          </main>
-        </div>
-      </ProtectedRoute>
-    </AuthProvider>
+    <ProtectedRoute requireAuth requireVerified>
+      <div className="min-h-screen bg-gray-50">
+        <DashboardNav />
+        <main className="pb-20">
+          {children}
+        </main>
+        <PWAInstallPrompt />
+      </div>
+    </ProtectedRoute>
   );
 }

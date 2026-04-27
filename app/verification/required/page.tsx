@@ -4,14 +4,24 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { VerificationService } from '@/lib/verification';
 import { useAuth } from '@/components/AuthProvider';
-import { Lodge } from '@/types';
-import { Shield, Search, Users, CheckCircle } from 'lucide-react';
+import { Lodge, VerificationStatus, VerificationMethod } from '@/types';
+import { Shield, Search, Users, CheckCircle, Clock, XCircle, ArrowLeft } from 'lucide-react';
+
+interface ExistingVerification {
+  id: string;
+  method: VerificationMethod;
+  status: VerificationStatus;
+  created_at: string;
+  lodge: { name: string; number: number } | null;
+  vouches?: { id: string }[];
+}
 
 export default function VerificationRequiredPage() {
   const { user } = useAuth();
   const router = useRouter();
-  
-  const [step, setStep] = useState<'choose' | 'lodge-search' | 'secretary' | 'vouch'>('choose');
+
+  const [step, setStep] = useState<'loading' | 'status' | 'choose' | 'lodge-search' | 'secretary' | 'vouch'>('loading');
+  const [existingVerification, setExistingVerification] = useState<ExistingVerification | null>(null);
   const [lodges, setLodges] = useState<Lodge[]>([]);
   const [selectedLodge, setSelectedLodge] = useState<Lodge | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +33,31 @@ export default function VerificationRequiredPage() {
     // If user is already verified, redirect to dashboard
     if (user?.is_verified) {
       router.push('/dashboard');
+      return;
     }
+
+    // Check for an existing pending verification before showing the choose screen
+    const checkExisting = async () => {
+      try {
+        const verifications = await VerificationService.getUserVerifications();
+        const pending = verifications.find(
+          (v: any) => v.status === 'pending'
+        ) as ExistingVerification | undefined;
+
+        if (pending) {
+          // Attach vouch count if available from the returned data
+          setExistingVerification(pending);
+          setStep('status');
+        } else {
+          setStep('choose');
+        }
+      } catch {
+        // If the fetch fails just fall through to the normal flow
+        setStep('choose');
+      }
+    };
+
+    checkExisting();
   }, [user, router]);
 
   const searchLodges = async () => {
@@ -32,7 +66,7 @@ export default function VerificationRequiredPage() {
     try {
       setLoading(true);
       const results = await VerificationService.searchLodges(searchQuery);
-      setLodges(results);
+      setLodges(results as unknown as Lodge[]);
     } catch (err: any) {
       setError(err.message || 'Error searching lodges');
     } finally {
@@ -42,13 +76,11 @@ export default function VerificationRequiredPage() {
 
   const handleSecretaryVerification = async () => {
     if (!selectedLodge) return;
-    
+
     try {
       setSubmitting(true);
+      setError('');
       await VerificationService.requestSecretaryVerification(selectedLodge.id);
-      
-      // Show success message and redirect
-      alert('Verification request submitted! A secretary will review your request.');
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error submitting verification request');
@@ -59,13 +91,11 @@ export default function VerificationRequiredPage() {
 
   const handleVouchVerification = async () => {
     if (!selectedLodge) return;
-    
+
     try {
       setSubmitting(true);
+      setError('');
       await VerificationService.requestVouchVerification(selectedLodge.id);
-      
-      // Show success message and redirect
-      alert('Verification request submitted! Ask verified brethren to vouch for you.');
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error submitting verification request');
@@ -73,6 +103,116 @@ export default function VerificationRequiredPage() {
       setSubmitting(false);
     }
   };
+
+  if (step === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (step === 'status' && existingVerification) {
+    const isVouch = existingVerification.method === 'vouch';
+    const vouchCount = existingVerification.vouches?.length ?? 0;
+    const statusColors: Record<VerificationStatus, string> = {
+      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      approved: 'bg-green-100 text-green-800 border-green-200',
+      rejected: 'bg-red-100 text-red-800 border-red-200',
+    };
+    const StatusIcon =
+      existingVerification.status === 'approved'
+        ? CheckCircle
+        : existingVerification.status === 'rejected'
+        ? XCircle
+        : Clock;
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="max-w-md w-full space-y-6">
+          <div className="text-center">
+            <Shield className="h-16 w-16 text-primary-600 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Verification Status
+            </h2>
+            <p className="text-gray-600">
+              You already have a verification request in progress.
+            </p>
+          </div>
+
+          <div className="card space-y-4">
+            {/* Status badge */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Status</span>
+              <span
+                className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full border text-sm font-medium capitalize ${
+                  statusColors[existingVerification.status]
+                }`}
+              >
+                <StatusIcon className="h-4 w-4" />
+                <span>{existingVerification.status}</span>
+              </span>
+            </div>
+
+            {/* Method */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Method</span>
+              <span className="text-sm text-gray-600 capitalize">
+                {existingVerification.method === 'vouch' ? 'Vouch Verification' : 'Secretary Verification'}
+              </span>
+            </div>
+
+            {/* Lodge */}
+            {existingVerification.lodge && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Lodge</span>
+                <span className="text-sm text-gray-600">
+                  {existingVerification.lodge.name} #{existingVerification.lodge.number}
+                </span>
+              </div>
+            )}
+
+            {/* Submitted date */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Submitted</span>
+              <span className="text-sm text-gray-600">
+                {new Date(existingVerification.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
+            </div>
+
+            {/* Vouch-specific details */}
+            {isVouch && existingVerification.status === 'pending' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-800">Vouches received</span>
+                  <span className="text-sm font-bold text-blue-800">
+                    {vouchCount}
+                  </span>
+                </div>
+                <p className="text-sm text-blue-700">
+                  Ask verified brethren you know to visit{' '}
+                  <span className="font-medium">Dashboard &rarr; Vouch Requests</span>{' '}
+                  and vouch for you. Once you have at least one vouch, a secretary can approve your request.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="btn-secondary w-full flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'choose') {
     return (
@@ -289,6 +429,12 @@ export default function VerificationRequiredPage() {
                 </div>
               </div>
 
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
+
               <div className="flex space-x-3">
                 <button
                   onClick={() => setStep('lodge-search')}
@@ -350,6 +496,12 @@ export default function VerificationRequiredPage() {
                   <p>5. You'll be notified when verified</p>
                 </div>
               </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
 
               <div className="flex space-x-3">
                 <button

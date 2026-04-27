@@ -478,6 +478,77 @@ CREATE POLICY "Authenticated users can view district leaderboard" ON leaderboard
 CREATE POLICY "Everyone can view businesses" ON businesses
     FOR SELECT TO authenticated USING (true);
 
--- Note: Admin check handled at application level  
+-- Note: Admin check handled at application level
 CREATE POLICY "Service role can manage businesses" ON businesses
     FOR ALL USING (auth.role() = 'service_role');
+
+-- =============================================================================
+-- FIX 1: RLS Privacy — Restrict presence table to verified users only
+-- Replaces the broad "Authenticated users can view presence" policy with one
+-- that checks is_verified = true in the users table.
+-- =============================================================================
+DROP POLICY IF EXISTS "Authenticated users can view presence" ON presence;
+
+CREATE POLICY "Verified users can view presence" ON presence
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM users
+            WHERE id = auth.uid()
+            AND is_verified = true
+        )
+    );
+
+-- =============================================================================
+-- FIX 2: RLS Privacy — Restrict user_badges to verified users only
+-- Replaces the broad "Authenticated users can view user badges" policy with one
+-- that checks is_verified = true in the users table.
+-- =============================================================================
+DROP POLICY IF EXISTS "Authenticated users can view user badges" ON user_badges;
+
+CREATE POLICY "Verified users can view user badges" ON user_badges
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM users
+            WHERE id = auth.uid()
+            AND is_verified = true
+        )
+    );
+
+-- =============================================================================
+-- FIX 3: RLS Privacy — Restrict counters to verified users only
+-- Replaces the broad "Authenticated users can view counters" policy with one
+-- that checks is_verified = true in the users table.
+-- =============================================================================
+DROP POLICY IF EXISTS "Authenticated users can view counters" ON counters;
+
+CREATE POLICY "Verified users can view counters" ON counters
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM users
+            WHERE id = auth.uid()
+            AND is_verified = true
+        )
+    );
+
+-- =============================================================================
+-- FIX 4: Add missing indexes
+-- These compound and single-column indexes were absent from the original schema
+-- and improve query performance for common access patterns.
+-- =============================================================================
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_events_created_by ON events(created_by);
+CREATE INDEX IF NOT EXISTS idx_verifications_subject_status ON verifications(subject_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_presence_user_last_seen ON presence(user_id, last_seen);
+
+-- =============================================================================
+-- FIX 5: Add missing updated_at triggers
+-- Audit: only users, lodges, and counters have updated_at columns; all three
+-- already have triggers defined above. No additional triggers are needed.
+-- This section is included for documentation and future-proofing — add any new
+-- tables with updated_at here using the pattern below:
+--
+--   DROP TRIGGER IF EXISTS update_<table>_updated_at ON <table>;
+--   CREATE TRIGGER update_<table>_updated_at BEFORE UPDATE ON <table>
+--       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- =============================================================================
+-- (No new triggers required — all updated_at tables are covered above.)

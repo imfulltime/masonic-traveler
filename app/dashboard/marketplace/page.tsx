@@ -4,16 +4,38 @@ import { useState, useEffect } from 'react';
 import { MarketplaceService } from '@/lib/marketplace';
 import { useAuth } from '@/components/AuthProvider';
 import { Business } from '@/types';
-import { 
-  Store, 
-  Search, 
-  Filter, 
-  MapPin, 
-  ExternalLink, 
+import {
+  Store,
+  Search,
+  MapPin,
+  ExternalLink,
   Mail,
   Plus,
-  Building
+  Building,
+  X
 } from 'lucide-react';
+
+const BUSINESS_CATEGORIES = [
+  'regalia',
+  'hotel',
+  'restaurant',
+  'bookstore',
+  'jewelry',
+  'financial',
+  'travel',
+  'retail',
+  'services',
+];
+
+interface AddBusinessForm {
+  name: string;
+  category: string;
+  city: string;
+  country: string;
+  lodge_proximity_km: string;
+  contact: string;
+  website: string;
+}
 
 export default function MarketplacePage() {
   const { isVerified } = useAuth();
@@ -22,7 +44,7 @@ export default function MarketplacePage() {
   const [cities, setCities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  
+
   const [filters, setFilters] = useState({
     category: '',
     city: '',
@@ -30,6 +52,18 @@ export default function MarketplacePage() {
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState<AddBusinessForm>({
+    name: '',
+    category: '',
+    city: '',
+    country: '',
+    lodge_proximity_km: '',
+    contact: '',
+    website: '',
+  });
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addError, setAddError] = useState('');
+  const [addSuccess, setAddSuccess] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -82,6 +116,56 @@ export default function MarketplacePage() {
       city: '',
       search: '',
     });
+  };
+
+  const openAddForm = () => {
+    setAddForm({ name: '', category: '', city: '', country: '', lodge_proximity_km: '', contact: '', website: '' });
+    setAddError('');
+    setAddSuccess(false);
+    setShowAddForm(true);
+  };
+
+  const closeAddForm = () => {
+    if (addSubmitting) return;
+    setShowAddForm(false);
+    setAddSuccess(false);
+    setAddError('');
+  };
+
+  const handleAddFormChange = (key: keyof AddBusinessForm, value: string) => {
+    setAddForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addForm.name.trim() || !addForm.category || !addForm.city.trim() || !addForm.country.trim()) {
+      setAddError('Please fill in all required fields (Name, Category, City, Country).');
+      return;
+    }
+    setAddSubmitting(true);
+    setAddError('');
+    try {
+      await MarketplaceService.submitBusiness({
+        name: addForm.name.trim(),
+        category: addForm.category,
+        city: addForm.city.trim(),
+        country: addForm.country.trim(),
+        ...(addForm.lodge_proximity_km ? { lodge_proximity_km: parseFloat(addForm.lodge_proximity_km) } : {}),
+        ...(addForm.contact.trim() ? { contact: addForm.contact.trim() } : {}),
+        ...(addForm.website.trim() ? { website: addForm.website.trim() } : {}),
+      });
+      setAddSuccess(true);
+      // Reload businesses and close modal after 2 seconds
+      await loadData();
+      setTimeout(() => {
+        setShowAddForm(false);
+        setAddSuccess(false);
+      }, 2000);
+    } catch (err: any) {
+      setAddError(err.message || 'Failed to submit business. Please try again.');
+    } finally {
+      setAddSubmitting(false);
+    }
   };
 
   const getCategoryIcon = (category: string) => {
@@ -155,7 +239,7 @@ export default function MarketplacePage() {
         </div>
         
         <button
-          onClick={() => setShowAddForm(true)}
+          onClick={openAddForm}
           className="btn-primary"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -318,7 +402,7 @@ export default function MarketplacePage() {
                   </div>
 
                   <span className="text-xs text-gray-500">
-                    Added {new Date(business.created_at).toLocaleDateString()}
+                    Added {new Date(business.created_at ?? '').toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -341,29 +425,171 @@ export default function MarketplacePage() {
       {/* Add Business Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add Business</h3>
-            <p className="text-gray-600 mb-4">
-              Submit a Masonic-friendly business for review and inclusion in our directory.
-            </p>
-            <div className="flex space-x-3">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Add Business</h3>
               <button
-                onClick={() => setShowAddForm(false)}
-                className="btn-secondary flex-1"
+                onClick={closeAddForm}
+                disabled={addSubmitting}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // This would open a proper form
-                  alert('Add business form would open here');
-                  setShowAddForm(false);
-                }}
-                className="btn-primary flex-1"
-              >
-                Continue
+                <X className="h-5 w-5" />
               </button>
             </div>
+
+            <form onSubmit={handleAddSubmit} className="p-6 space-y-4">
+              {/* Success state */}
+              {addSuccess && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-green-800 font-medium">Business submitted successfully!</p>
+                  <p className="text-green-600 text-sm mt-1">Closing in a moment...</p>
+                </div>
+              )}
+
+              {/* Error state */}
+              {addError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-sm">{addError}</p>
+                </div>
+              )}
+
+              {!addSuccess && (
+                <>
+                  <p className="text-sm text-gray-600">
+                    Submit a Masonic-friendly business for inclusion in our directory. Required fields are marked with *.
+                  </p>
+
+                  {/* Business Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Business Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={addForm.name}
+                      onChange={(e) => handleAddFormChange('name', e.target.value)}
+                      className="input w-full"
+                      placeholder="e.g. Brothers' Regalia Shop"
+                      required
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category *
+                    </label>
+                    <select
+                      value={addForm.category}
+                      onChange={(e) => handleAddFormChange('category', e.target.value)}
+                      className="input w-full"
+                      required
+                    >
+                      <option value="">Select a category</option>
+                      {BUSINESS_CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>
+                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City *
+                    </label>
+                    <input
+                      type="text"
+                      value={addForm.city}
+                      onChange={(e) => handleAddFormChange('city', e.target.value)}
+                      className="input w-full"
+                      placeholder="e.g. New York"
+                      required
+                    />
+                  </div>
+
+                  {/* Country */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country *
+                    </label>
+                    <input
+                      type="text"
+                      value={addForm.country}
+                      onChange={(e) => handleAddFormChange('country', e.target.value)}
+                      className="input w-full"
+                      placeholder="e.g. United States"
+                      required
+                    />
+                  </div>
+
+                  {/* Lodge Proximity */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Distance from nearest lodge (km)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={addForm.lodge_proximity_km}
+                      onChange={(e) => handleAddFormChange('lodge_proximity_km', e.target.value)}
+                      className="input w-full"
+                      placeholder="Optional — e.g. 0.5"
+                    />
+                  </div>
+
+                  {/* Contact */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contact (email or phone)
+                    </label>
+                    <input
+                      type="text"
+                      value={addForm.contact}
+                      onChange={(e) => handleAddFormChange('contact', e.target.value)}
+                      className="input w-full"
+                      placeholder="Optional — e.g. info@business.com or +1 555-0100"
+                    />
+                  </div>
+
+                  {/* Website */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Website
+                    </label>
+                    <input
+                      type="text"
+                      value={addForm.website}
+                      onChange={(e) => handleAddFormChange('website', e.target.value)}
+                      className="input w-full"
+                      placeholder="Optional — e.g. www.business.com"
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex space-x-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={closeAddForm}
+                      disabled={addSubmitting}
+                      className="btn-secondary flex-1"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={addSubmitting}
+                      className="btn-primary flex-1"
+                    >
+                      {addSubmitting ? 'Submitting...' : 'Submit Business'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
           </div>
         </div>
       )}

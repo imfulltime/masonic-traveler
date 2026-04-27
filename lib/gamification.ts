@@ -41,8 +41,14 @@ export class GamificationService {
 
   /**
    * Get all available badges with user progress
+   * Also auto-awards any badges whose threshold the user has met but not yet received.
+   * Returns the full badge list and, as a side-channel, the newly awarded badges so the
+   * UI can surface a notification.
    */
-  static async getBadgesWithProgress(): Promise<BadgeWithDetails[]> {
+  static async getBadgesWithProgress(): Promise<{
+    badges: BadgeWithDetails[];
+    newlyAwarded: BadgeWithDetails[];
+  }> {
     const session = await supabase.auth.getSession();
     if (!session.data.session?.user) throw new Error('Not authenticated');
 
@@ -69,13 +75,47 @@ export class GamificationService {
 
     const earnedBadgeIds = new Set(userBadges?.map(ub => ub.badge_id) || []);
 
-    return (badges || []).map(badge => {
+    // ---------------------------------------------------------------
+    // Auto-award logic: find badges whose threshold is met but not yet earned
+    // ---------------------------------------------------------------
+    const toAward: { user_id: string; badge_id: string }[] = [];
+
+    for (const badge of badges || []) {
+      if (earnedBadgeIds.has(badge.id)) continue;
+
+      if (counter) {
+        const currentCount = badge.kind === 'visit' ? counter.visits : counter.charity;
+        if ((currentCount ?? 0) >= badge.threshold) {
+          toAward.push({ user_id: userId, badge_id: badge.id });
+        }
+      }
+    }
+
+    const newlyAwardedIds = new Set<string>();
+
+    if (toAward.length > 0) {
+      const { error: insertError } = await supabase
+        .from('user_badges')
+        .insert(toAward);
+
+      // If the insert fails (e.g. a race condition already inserted some rows),
+      // we tolerate the error and simply leave them out of the newly-awarded set.
+      if (!insertError) {
+        for (const row of toAward) {
+          earnedBadgeIds.add(row.badge_id);
+          newlyAwardedIds.add(row.badge_id);
+        }
+      }
+    }
+    // ---------------------------------------------------------------
+
+    const badgesWithDetails = (badges || []).map(badge => {
       const isEarned = earnedBadgeIds.has(badge.id);
       let progress = 0;
 
       if (!isEarned && counter) {
         const currentCount = badge.kind === 'visit' ? counter.visits : counter.charity;
-        progress = Math.min(currentCount / badge.threshold, 1);
+        progress = Math.min((currentCount ?? 0) / badge.threshold, 1);
       }
 
       return {
@@ -84,6 +124,10 @@ export class GamificationService {
         progress: isEarned ? 1 : progress,
       };
     });
+
+    const newlyAwarded = badgesWithDetails.filter(b => newlyAwardedIds.has(b.id));
+
+    return { badges: badgesWithDetails, newlyAwarded };
   }
 
   /**
@@ -123,27 +167,28 @@ export class GamificationService {
     const counter = await this.getUserCounters(userId);
     if (!counter) return;
 
-    // Get all badges the user hasn't earned yet
-    const { data: availableBadges } = await supabase
-      .from('badges')
-      .select(`
-        id,
-        code,
-        kind,
-        threshold
-      `)
-      .not('id', 'in', `(
-        SELECT badge_id FROM user_badges WHERE user_id = '${userId}'
-      )`);
+    // Get badges the user has already earned
+    const { data: earnedBadges } = await supabase
+      .from('user_badges')
+      .select('badge_id')
+      .eq('user_id', userId);
 
-    if (!availableBadges) return;
+    const earnedIds = new Set((earnedBadges || []).map(b => b.badge_id));
+
+    // Get all badges, then filter out already-earned ones
+    const { data: allBadges } = await supabase
+      .from('badges')
+      .select('id, code, kind, threshold');
+
+    const availableBadges = (allBadges || []).filter(b => !earnedIds.has(b.id));
+    if (availableBadges.length === 0) return;
 
     const newBadges = [];
 
     for (const badge of availableBadges) {
       const currentCount = badge.kind === 'visit' ? counter.visits : counter.charity;
-      
-      if (currentCount >= badge.threshold) {
+
+      if ((currentCount ?? 0) >= badge.threshold) {
         newBadges.push({
           user_id: userId,
           badge_id: badge.id,
@@ -174,12 +219,17 @@ export class GamificationService {
       throw new Error('Admin operations not available - Supabase service role key not configured');
     }
     
-    // Update counters
+    // Fetch current counter value first, then increment
+    const existing = await this.getUserCounters(userId);
+    const currentVisits = existing?.visits ?? 0;
+    const currentCharity = existing?.charity ?? 0;
+
     const { data: updatedCounter, error: updateError } = await supabaseAdmin
       .from('counters')
       .upsert({
         user_id: userId,
-        [type === 'visit' ? 'visits' : 'charity']: increment,
+        visits: type === 'visit' ? currentVisits + increment : currentVisits,
+        charity: type === 'charity' ? currentCharity + increment : currentCharity,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'user_id',
@@ -367,13 +417,13 @@ export class GamificationService {
     
     try {
       // Refresh global leaderboard
-      await supabaseAdmin.rpc('refresh_global_leaderboard');
-      
+      await (supabaseAdmin as any).rpc('refresh_global_leaderboard');
+
       // Refresh GL leaderboards
-      await supabaseAdmin.rpc('refresh_gl_leaderboards');
-      
+      await (supabaseAdmin as any).rpc('refresh_gl_leaderboards');
+
       // Refresh district leaderboards
-      await supabaseAdmin.rpc('refresh_district_leaderboards');
+      await (supabaseAdmin as any).rpc('refresh_district_leaderboards');
     } catch (error) {
       console.error('Error refreshing leaderboards:', error);
       // Fall back to manual refresh if RPC functions don't exist
@@ -416,7 +466,7 @@ export class GamificationService {
           user_id: entry.user_id,
           visits: entry.visits,
           charity: entry.charity,
-          score: calculateScore(entry.visits, entry.charity),
+          score: calculateScore(entry.visits ?? 0, entry.charity ?? 0),
         }))
         .sort((a, b) => b.score - a.score)
         .map((entry, index) => ({
@@ -425,7 +475,7 @@ export class GamificationService {
         }));
 
       if (globalEntries.length > 0) {
-        await supabaseAdmin.from('leaderboard_global').insert(globalEntries);
+        await (supabaseAdmin as any).from('leaderboard_global').insert(globalEntries);
       }
 
       // Group by Grand Lodge and District for those leaderboards
@@ -463,7 +513,7 @@ export class GamificationService {
           }));
 
         if (glEntries.length > 0) {
-          await supabaseAdmin.from('leaderboard_by_gl').insert(glEntries);
+          await (supabaseAdmin as any).from('leaderboard_by_gl').insert(glEntries);
         }
       }
 
@@ -484,7 +534,7 @@ export class GamificationService {
           }));
 
         if (districtEntries.length > 0) {
-          await supabaseAdmin.from('leaderboard_by_district').insert(districtEntries);
+          await (supabaseAdmin as any).from('leaderboard_by_district').insert(districtEntries);
         }
       }
     }

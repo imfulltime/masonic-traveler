@@ -5,12 +5,12 @@ const withPWA = require('next-pwa')({
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/api\.openstreetmap\.org/,
+      urlPattern: /^https:\/\/.*\.cartocdn\.com/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'map-tiles',
         expiration: {
-          maxEntries: 100,
+          maxEntries: 200,
           maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
       },
@@ -30,27 +30,36 @@ const withPWA = require('next-pwa')({
   ],
 });
 
+// Derive allowed origins from the app URL env var so the same config works
+// in both local dev and production (Vercel sets NEXT_PUBLIC_APP_URL).
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const allowedOrigins = ['localhost:3000'];
+try {
+  const { hostname } = new URL(appUrl);
+  if (hostname !== 'localhost' && !allowedOrigins.includes(hostname)) {
+    allowedOrigins.push(hostname);
+  }
+} catch {
+  // invalid URL — keep defaults
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000'],
+      allowedOrigins,
     },
   },
   images: {
-    domains: ['api.dicebear.com'], // For avatar generation
+    domains: ['api.dicebear.com'],
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true, // ESLint runs separately in CI
   },
+  // TypeScript errors are now 0 — keep ignoreBuildErrors off so the build
+  // catches regressions.
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 };
 

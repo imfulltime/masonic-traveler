@@ -31,6 +31,7 @@ const baseAuth = (overrides: Partial<ReturnType<typeof useAuth>> = {}) => ({
   ...overrides,
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const buildConversation = (id: string, lastMessage: string) => ({
   id,
   created_at: new Date().toISOString(),
@@ -59,7 +60,8 @@ const buildConversation = (id: string, lastMessage: string) => ({
 describe('MessagesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedMessaging.subscribeToConversations.mockReturnValue({ unsubscribe: jest.fn() });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockedMessaging.subscribeToConversations.mockReturnValue({ unsubscribe: jest.fn() } as any);
   });
 
   it('requires verification before showing conversations', () => {
@@ -85,10 +87,11 @@ describe('MessagesPage', () => {
     );
 
     mockedMessaging.getConversations
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .mockResolvedValue([
         buildConversation('1', 'Hope to see you there'),
         buildConversation('2', 'Travel safely'),
-      ]);
+      ] as any);
 
     mockedMessaging.getConversationDisplayName
       .mockImplementation((conversation) =>

@@ -39,12 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = AuthService.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
-        
+
         if (session?.user) {
-          await loadUser();
+          loadUser(); // fire and forget — do not await to avoid blocking signInWithPassword
         } else {
           setUser(null);
           setLoading(false);
@@ -133,14 +133,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const hasRole = (role: 'brother' | 'secretary' | 'admin') => {
     if (!user) return false;
-    
-    const roleHierarchy = {
-      'brother': 1,
-      'secretary': 2,
-      'admin': 3,
-    };
 
-    return roleHierarchy[user.role] >= roleHierarchy[role];
+    // Role hierarchy (intentional, least to most privileged):
+    // - 'admin'     check: only admin passes
+    // - 'secretary' check: secretary or admin passes
+    // - 'brother'   check: any verified role (brother, secretary, admin) passes
+    if (role === 'admin') {
+      return user.role === 'admin';
+    }
+    if (role === 'secretary') {
+      return user.role === 'secretary' || user.role === 'admin';
+    }
+    // role === 'brother'
+    return user.role === 'brother' || user.role === 'secretary' || user.role === 'admin';
   };
 
   const value = {

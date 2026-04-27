@@ -101,7 +101,7 @@ export class AuthService {
         )
       `)
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       // Enhanced error handling for policy issues
@@ -113,7 +113,7 @@ export class AuthService {
       }
       throw error;
     }
-    return user as AuthUser;
+    return user as AuthUser | null;
   }
 
   /**
@@ -121,6 +121,7 @@ export class AuthService {
    */
   static async updateProfile(updates: {
     first_name?: string;
+    last_name?: string;
     lodge_id?: string;
   }) {
     const session = await this.getSession();

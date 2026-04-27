@@ -11,13 +11,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login?error=config_error', request.url));
   }
 
-  if (code) {
-    try {
-      await supabase.auth.exchangeCodeForSession(code);
-    } catch (error) {
-      console.error('Error exchanging code for session:', error);
-      return NextResponse.redirect(new URL('/auth/login?error=auth_error', request.url));
-    }
+  if (!code) {
+    return NextResponse.redirect(new URL('/auth/login?error=auth_failed', request.url));
+  }
+
+  try {
+    await supabase.auth.exchangeCodeForSession(code);
+  } catch (error) {
+    console.error('Error exchanging code for session:', error);
+    return NextResponse.redirect(new URL('/auth/login?error=auth_failed', request.url));
   }
 
   // Redirect to dashboard on successful auth

@@ -28,34 +28,56 @@ export class MessagingService {
 
     if (error) throw error;
 
-    // Get last message for each conversation
-    const conversationsWithMessages = await Promise.all(
-      (conversations || []).map(async (conversation) => {
-        const { data: lastMessage } = await supabase
-          .from('messages')
-          .select(`
-            id,
-            body,
-            created_at,
-            sender:sender_id (
-              id,
-              first_name,
-              obfuscated_handle
-            )
-          `)
-          .eq('conversation_id', conversation.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+    const conversationList = conversations || [];
 
-        return {
-          ...conversation,
-          last_message: lastMessage || undefined,
-        };
-      })
-    );
+    if (conversationList.length === 0) return [];
 
-    return conversationsWithMessages;
+    // Batch-fetch the last message for all conversations in a single query
+    const conversationIds = conversationList.map((c) => c.id);
+
+    const { data: allMessages } = await supabase
+      .from('messages')
+      .select(`
+        id,
+        body,
+        created_at,
+        conversation_id,
+        sender_id,
+        sender:sender_id (
+          id,
+          first_name,
+          obfuscated_handle
+        )
+      `)
+      .in('conversation_id', conversationIds)
+      .order('created_at', { ascending: false });
+
+    // Map: keep only the first (most-recent) message per conversation
+    const lastMessageByConversation = new Map<string, typeof allMessages extends (infer T)[] | null ? T : never>();
+    for (const msg of allMessages || []) {
+      if (!lastMessageByConversation.has(msg.conversation_id)) {
+        lastMessageByConversation.set(msg.conversation_id, msg);
+      }
+    }
+
+    const conversationsWithMessages = conversationList.map((conversation) => ({
+      ...conversation,
+      last_message: lastMessageByConversation.get(conversation.id) || undefined,
+    }));
+
+    return conversationsWithMessages as unknown as ConversationWithParticipants[];
+  }
+
+  /**
+   * Create or retrieve an existing 1-on-1 conversation with another user
+   */
+  static async createConversation(targetUserId: string): Promise<string> {
+    const { data, error } = await supabase.rpc('create_or_get_conversation', {
+      target_user_id: targetUserId,
+    });
+
+    if (error) throw error;
+    return data as string;
   }
 
   /**
@@ -263,13 +285,13 @@ export class MessagingService {
     if (!otherParticipant) return 'Unknown Brother';
 
     // If we have a first name and lodge, show both
-    if (otherParticipant.first_name && otherParticipant.lodge?.name) {
-      return `${otherParticipant.first_name} from ${otherParticipant.lodge.name}`;
+    if (otherParticipant.first_name && (otherParticipant as any).lodge?.name) {
+      return `${otherParticipant.first_name} from ${(otherParticipant as any).lodge.name}`;
     }
 
     // If we have just a lodge, show generic label
-    if (otherParticipant.lodge?.name) {
-      return `Brother from ${otherParticipant.lodge.name}`;
+    if ((otherParticipant as any).lodge?.name) {
+      return `Brother from ${(otherParticipant as any).lodge.name}`;
     }
 
     // Fall back to obfuscated handle

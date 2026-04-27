@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Verification, VerificationStatus } from '@/types';
+import { NotificationsService } from './notifications';
 
 export class VerificationService {
   /**
@@ -272,6 +273,14 @@ export class VerificationService {
       }, {
         onConflict: 'user_id'
       });
+
+    // Notify the verified user
+    await NotificationsService.createNotification(
+      verification.subject_user_id,
+      'verification_approved',
+      'Verification Approved',
+      'Congratulations! Your Masonic membership has been verified. You now have full access to all features.'
+    );
 
     return verification;
   }
