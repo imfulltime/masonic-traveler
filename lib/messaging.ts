@@ -194,14 +194,20 @@ export class MessagingService {
   }
 
   /**
-   * Subscribe to new messages in a conversation
+   * Subscribe to new messages in a conversation.
+   * Uses the raw realtime payload as the primary source of truth and
+   * tries to enrich it with sender details — but always fires the
+   * callback even if the enrichment query fails (RLS edge cases on
+   * the users join previously caused silent drops).
+   *
+   * Returns the channel so callers can pass it to supabase.removeChannel().
    */
   static subscribeToMessages(
     conversationId: string,
     onMessage: (message: MessageWithSender) => void
   ) {
-    return supabase
-      .channel(`messages:${conversationId}`)
+    const channel = supabase
+      .channel(`conversation-${conversationId}`)
       .on(
         'postgres_changes',
         {
@@ -211,29 +217,45 @@ export class MessagingService {
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          // Fetch the complete message with sender info
-          const { data: message } = await supabase
-            .from('messages')
-            .select(`
-              id,
-              body,
-              created_at,
-              sender_id,
-              sender:sender_id (
-                id,
-                first_name,
-                obfuscated_handle
-              )
-            `)
-            .eq('id', payload.new.id)
-            .single();
+          const raw = payload.new as {
+            id: string;
+            body: string;
+            created_at: string;
+            sender_id: string;
+            conversation_id: string;
+          };
 
-          if (message) {
-            onMessage(message as MessageWithSender);
+          // Best-effort sender enrichment — fall back to raw payload
+          // if it fails (RLS, network, etc.) so the message still shows.
+          let sender: MessageWithSender['sender'] = {
+            id: raw.sender_id,
+            first_name: null,
+            obfuscated_handle: null,
+          } as MessageWithSender['sender'];
+
+          try {
+            const { data } = await supabase
+              .from('users')
+              .select('id, first_name, obfuscated_handle')
+              .eq('id', raw.sender_id)
+              .maybeSingle();
+            if (data) sender = data as MessageWithSender['sender'];
+          } catch {
+            /* enrichment failed — use the fallback above */
           }
+
+          onMessage({
+            id: raw.id,
+            body: raw.body,
+            created_at: raw.created_at,
+            sender_id: raw.sender_id,
+            sender,
+          } as MessageWithSender);
         }
       )
       .subscribe();
+
+    return channel;
   }
 
   /**

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MessagingService } from '@/lib/messaging';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/AuthProvider';
 import { MessageWithSender } from '@/types';
 import { formatTime } from '@/lib/utils';
@@ -25,18 +26,23 @@ export default function ConversationPage() {
 
   useEffect(() => {
     loadConversation();
-    
-    // Subscribe to new messages
-    const subscription = MessagingService.subscribeToMessages(
+
+    // Subscribe to new messages (Realtime). Dedupe by id since the
+    // sender already adds their own message optimistically in
+    // handleSendMessage — without dedup they'd see duplicates.
+    const channel = MessagingService.subscribeToMessages(
       conversationId,
       (message) => {
-        setMessages(prev => [...prev, message]);
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
         scrollToBottom();
       }
     );
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
