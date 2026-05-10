@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function DebugPage() {
+  // Hooks MUST come before any conditional returns (rules-of-hooks)
+  const { user, loading, isVerified, signIn, signOut } = useAuth();
+  const router = useRouter();
+  const [testEmail, setTestEmail] = useState('brother1@example.com');
+  const [testPassword, setTestPassword] = useState('masonic123');
+  const [loginError, setLoginError] = useState('');
+
   if (process.env.NODE_ENV !== 'development') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -12,12 +19,6 @@ export default function DebugPage() {
       </div>
     );
   }
-
-  const { user, loading, isVerified, signIn, signOut } = useAuth();
-  const router = useRouter();
-  const [testEmail, setTestEmail] = useState('brother1@example.com');
-  const [testPassword, setTestPassword] = useState('masonic123');
-  const [loginError, setLoginError] = useState('');
 
   const testAccounts = [
     { email: 'secretary.sf@example.com', verified: true, role: 'secretary', name: 'Robert' },
