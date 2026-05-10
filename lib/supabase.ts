@@ -1,3 +1,4 @@
+import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 
@@ -8,20 +9,13 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   console.warn('Supabase credentials not found. Some features may not work.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
-});
+// Browser client — uses cookies (via @supabase/ssr) so sessions are
+// shared with the Next.js middleware. Without this, the middleware
+// can't see the auth session and redirects authenticated users to /login.
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 
-// Server-side client with service role key
+// Server-side admin client — service role key, no session persistence.
+// Uses the regular createClient since this is server-only and doesn't need cookies.
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE || '';
 
 export const supabaseAdmin = serviceRoleKey && process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -31,8 +25,8 @@ export const supabaseAdmin = serviceRoleKey && process.env.NEXT_PUBLIC_SUPABASE_
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
     )
   : null;
