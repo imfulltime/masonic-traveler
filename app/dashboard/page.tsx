@@ -43,7 +43,7 @@ export default function DashboardPage() {
             <ShieldAlert className="h-8 w-8 text-gold-400" />
           </div>
           <p className="eyebrow mb-3">Members Only</p>
-          <h2 className="font-serif text-3xl font-bold text-ink-900 mb-3">
+          <h2 className="text-3xl font-bold text-ink-900 mb-3">
             Verification Required
           </h2>
           <p className="text-ink-600 max-w-sm mx-auto mb-8 text-balance">
@@ -64,7 +64,7 @@ export default function DashboardPage() {
       <div className="px-4 pt-6 pb-2">
         <div className="max-w-3xl">
           <p className="eyebrow mb-1.5">Welcome Back</p>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-ink-900 leading-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-ink-900 leading-tight">
             Hello, {user?.first_name || 'Brother'}.
           </h1>
           <p className="text-ink-600 text-sm mt-1">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
             <div className="w-9 h-9 rounded-lg bg-navy-gradient flex items-center justify-center shadow-luxe">
               <MapPin className="h-4 w-4 text-gold-400" />
             </div>
-            <h2 className="font-serif text-xl font-bold text-ink-900">Nearby Brethren</h2>
+            <h2 className="text-xl font-bold text-ink-900">Nearby Brethren</h2>
           </div>
         </div>
 
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             <div className="w-9 h-9 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold">
               <Calendar className="h-4 w-4 text-ink-900" />
             </div>
-            <h2 className="font-serif text-xl font-bold text-ink-900">Next 7 Days</h2>
+            <h2 className="text-xl font-bold text-ink-900">Next 7 Days</h2>
           </div>
           <button
             onClick={() => router.push('/dashboard/events')}

@@ -66,7 +66,7 @@ export function DashboardNav() {
             <Link href="/dashboard" className="flex items-center gap-3 group">
               <span className="monogram">MT</span>
               <div>
-                <h1 className="text-base font-serif font-bold text-white leading-tight">
+                <h1 className="text-base font-bold text-white leading-tight">
                   Masonic Traveler
                 </h1>
                 {user && (

@@ -59,14 +59,14 @@ export default function LoginPage() {
         <Link href="/" className="relative flex items-center gap-3 group">
           <span className="monogram">MT</span>
           <div>
-            <p className="font-serif font-bold text-lg leading-none">Masonic Traveler</p>
+            <p className="font-bold text-lg leading-none">Masonic Traveler</p>
             <p className="eyebrow text-gold-400/90 mt-1">Brotherhood Without Borders</p>
           </div>
         </Link>
 
         <div className="relative">
           <p className="eyebrow text-gold-400 mb-6">Welcome Back, Brother</p>
-          <h1 className="font-serif font-bold text-5xl xl:text-6xl leading-[1.05] text-balance mb-6">
+          <h1 className="font-bold text-5xl xl:text-6xl leading-[1.05] text-balance mb-6">
             Your brethren are<br />
             <span className="text-gold-shine">always nearby.</span>
           </h1>
@@ -88,14 +88,14 @@ export default function LoginPage() {
           <Link href="/" className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <span className="monogram">MT</span>
             <div>
-              <p className="font-serif font-bold text-ink-900">Masonic Traveler</p>
+              <p className="font-bold text-ink-900">Masonic Traveler</p>
               <p className="eyebrow text-gold-700">Brotherhood Without Borders</p>
             </div>
           </Link>
 
           <div className="mb-10">
             <p className="eyebrow mb-3">Member Sign In</p>
-            <h2 className="font-serif text-4xl font-bold text-ink-900 mb-2">
+            <h2 className="text-4xl font-bold text-ink-900 mb-2">
               Welcome back
             </h2>
             <p className="text-ink-600">

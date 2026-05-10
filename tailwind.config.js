@@ -70,9 +70,12 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
-        serif: ['var(--font-playfair)', 'Playfair Display', 'Georgia', 'serif'],
-        display: ['var(--font-playfair)', 'Playfair Display', 'Georgia', 'serif'],
+        // Clean, Arial-style sans-serif throughout. System fonts give native
+        // platform feel + zero load cost. Falls back to Arial/Helvetica.
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"'],
+        // Aliased to sans so existing font-serif/font-display classes still work
+        serif: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
+        display: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
       },
       letterSpacing: {
         luxe: '0.02em',

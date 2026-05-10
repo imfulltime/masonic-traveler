@@ -46,7 +46,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <span className="monogram">MT</span>
             <div>
-              <p className="font-serif font-bold text-lg leading-none">Masonic Traveler</p>
+              <p className="font-bold text-lg leading-none">Masonic Traveler</p>
               <p className="eyebrow text-gold-400/90 mt-1">Brotherhood Without Borders</p>
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function HomePage() {
         <div className="relative container mx-auto px-6 pt-12 pb-24 md:pt-20 md:pb-32 text-center">
           <p className="eyebrow text-gold-400 mb-6 animate-fade-in">EST. ESTABLISHED FOR THE CRAFT</p>
 
-          <h1 className="font-serif font-bold leading-[1.05] tracking-tight text-balance text-5xl sm:text-6xl md:text-7xl mb-6 animate-slide-up">
+          <h1 className="font-bold leading-[1.05] tracking-tight text-balance text-5xl sm:text-6xl md:text-7xl mb-6 animate-slide-up">
             Brotherhood,<br />
             <span className="text-gold-shine">refined for the road.</span>
           </h1>
@@ -127,7 +127,7 @@ export default function HomePage() {
                 <div className="w-12 h-12 rounded-lg bg-navy-gradient flex items-center justify-center mb-4 shadow-luxe group-hover:shadow-gold-glow transition-shadow">
                   <Icon className="h-6 w-6 text-gold-400" />
                 </div>
-                <h3 className="font-serif font-bold text-lg mb-2 text-ink-900">{title}</h3>
+                <h3 className="font-bold text-lg mb-2 text-ink-900">{title}</h3>
                 <p className="text-ink-600 text-sm leading-relaxed">{body}</p>
               </div>
             ))}
@@ -144,7 +144,7 @@ export default function HomePage() {
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gold-gradient" />
 
             <Compass className="h-10 w-10 text-gold-400 mx-auto mb-6 opacity-80" />
-            <h2 className="font-serif font-bold text-balance text-3xl md:text-5xl mb-4 text-white">
+            <h2 className="font-bold text-balance text-3xl md:text-5xl mb-4 text-white">
               Where will the Craft<br />take you next?
             </h2>
             <p className="text-white/70 text-lg max-w-xl mx-auto mb-8">
@@ -165,7 +165,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <span className="monogram">MT</span>
               <div>
-                <p className="font-serif font-bold text-white">Masonic Traveler</p>
+                <p className="font-bold text-white">Masonic Traveler</p>
                 <p className="text-xs text-ink-500">An independent platform for the traveling Mason.</p>
               </div>
             </div>

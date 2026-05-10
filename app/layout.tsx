@@ -1,21 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-});
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-playfair',
-});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -51,13 +37,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-ivory-50 text-ink-900 antialiased`}>
+      <body className="min-h-screen bg-ivory-50 text-ink-900 antialiased">
         <ErrorBoundary>
           <AuthProvider>
             {children}
