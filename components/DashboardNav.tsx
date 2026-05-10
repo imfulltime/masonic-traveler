@@ -4,7 +4,6 @@ import { useAuth } from './AuthProvider';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Square,
   Map,
   Calendar,
   MessageCircle,
@@ -15,7 +14,7 @@ import {
   LogOut,
   Shield,
   Users,
-  ShieldAlert
+  ShieldAlert,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 
@@ -51,47 +50,56 @@ export function DashboardNav() {
   });
 
   const isActive = (href: string, exact?: boolean) => {
-    if (exact) {
-      return pathname === href;
-    }
+    if (exact) return pathname === href;
     return pathname.startsWith(href);
   };
 
   return (
     <>
-      {/* Top header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
+      {/* ─── Top header ─────────────────────────────────── */}
+      <header className="bg-navy-gradient fixed top-0 left-0 right-0 z-50 shadow-luxe">
+        {/* Gold hairline accent at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gold-gradient opacity-60" />
+
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Square className="h-8 w-8 text-primary-600" />
+            <Link href="/dashboard" className="flex items-center gap-3 group">
+              <span className="monogram">MT</span>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Masonic Traveler</h1>
+                <h1 className="text-base font-serif font-bold text-white leading-tight">
+                  Masonic Traveler
+                </h1>
                 {user && (
-                  <p className="text-xs text-gray-500">
-                    {user.first_name} • {user.lodge?.name || 'No Lodge'}
+                  <p className="text-[11px] text-gold-400/80 tracking-luxe">
+                    {user.first_name}
+                    {user.lodge?.name && ` · ${user.lodge.name}`}
                   </p>
                 )}
               </div>
-            </div>
+            </Link>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1">
               <Link
                 href="/dashboard/profile"
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-white/70 hover:text-gold-400 hover:bg-white/5 rounded-lg transition-colors"
+                title="Profile"
               >
                 <User className="h-5 w-5" />
               </Link>
               <Link
                 href="/dashboard/settings"
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-white/70 hover:text-gold-400 hover:bg-white/5 rounded-lg transition-colors"
+                title="Settings"
               >
                 <Settings className="h-5 w-5" />
               </Link>
-              <NotificationBell />
+              <div className="text-white/70 hover:text-gold-400">
+                <NotificationBell />
+              </div>
               <button
                 onClick={handleSignOut}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+                className="p-2 text-white/70 hover:text-gold-400 hover:bg-white/5 rounded-lg transition-colors"
+                title="Sign out"
               >
                 <LogOut className="h-5 w-5" />
               </button>
@@ -100,14 +108,15 @@ export function DashboardNav() {
         </div>
       </header>
 
-      {/* Main content area with top padding */}
-      <div className="pt-16">
-        {/* Content goes here */}
-      </div>
+      {/* Spacer so content isn't hidden behind fixed header */}
+      <div className="h-16" />
 
-      {/* Bottom navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="flex items-stretch py-1">
+      {/* ─── Bottom navigation ──────────────────────────── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-ink-100 shadow-[0_-4px_20px_-4px_rgba(26,31,44,0.08)]">
+        {/* Gold hairline at top */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gold-gradient opacity-50" />
+
+        <div className="flex items-stretch py-1.5 px-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
@@ -117,15 +126,27 @@ export function DashboardNav() {
                 key={item.href}
                 href={item.href}
                 title={item.label}
-                className={`flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 transition-colors min-w-0 ${
-                  active
-                    ? 'text-primary-600'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className="relative flex-1 flex flex-col items-center justify-center py-2 px-1 min-w-0 group transition-colors"
               >
-                <Icon className="h-5 w-5 shrink-0" />
+                {active && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gold-gradient rounded-full" />
+                )}
+                <Icon
+                  className={`h-5 w-5 shrink-0 transition-colors ${
+                    active
+                      ? 'text-primary-800'
+                      : 'text-ink-400 group-hover:text-ink-700'
+                  }`}
+                  strokeWidth={active ? 2.4 : 1.8}
+                />
                 {navItems.length <= 6 && (
-                  <span className={`text-[10px] mt-0.5 leading-tight truncate w-full text-center ${active ? 'font-medium' : ''}`}>
+                  <span
+                    className={`text-[10px] mt-0.5 leading-tight truncate w-full text-center tracking-luxe transition-colors ${
+                      active
+                        ? 'font-semibold text-primary-800'
+                        : 'text-ink-500 group-hover:text-ink-700'
+                    }`}
+                  >
                     {item.label}
                   </span>
                 )}

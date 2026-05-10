@@ -11,9 +11,9 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute requireAuth requireVerified>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-ivory-50">
         <DashboardNav />
-        <main className="pb-20">
+        <main className="pb-24">
           {children}
         </main>
         <PWAInstallPrompt />

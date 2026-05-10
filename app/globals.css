@@ -2,80 +2,251 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ─────────────────────────────────────────────────────────
+   Base layer — refined typography & background
+─────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-/* Custom scrollbar */
+  body {
+    @apply bg-ivory-50 text-ink-900;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-luxe text-ink-900;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl font-bold leading-tight;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl font-bold leading-tight;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-gold-200 text-ink-900;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Custom scrollbar
+─────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-ink-50;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded-full;
+  @apply bg-ink-300 rounded-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
+  @apply bg-ink-400;
+  background-clip: padding-box;
 }
 
-/* Maplibre GL styles */
+/* ─────────────────────────────────────────────────────────
+   Maplibre GL custom styling
+─────────────────────────────────────────────────────────── */
 .mapboxgl-popup {
-  max-width: 200px;
+  max-width: 240px;
 }
 
 .mapboxgl-popup-content {
-  @apply bg-white rounded-lg shadow-lg p-3;
+  @apply bg-white rounded-xl shadow-luxe p-3 border border-ink-100;
 }
 
 .mapboxgl-popup-close-button {
-  @apply text-gray-500 hover:text-gray-700;
+  @apply text-ink-400 hover:text-ink-700;
 }
 
-/* Custom utilities */
+/* ─────────────────────────────────────────────────────────
+   Utilities
+─────────────────────────────────────────────────────────── */
 @layer utilities {
-  .masonic-gradient {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%);
+  /* Background gradients & textures */
+  .bg-navy-gradient {
+    background: linear-gradient(135deg, #0a1538 0%, #1e3a8a 50%, #2e3f72 100%);
   }
-  
+
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #D4AF37 0%, #E8C76B 50%, #B8862C 100%);
+  }
+
+  .bg-navy-gold {
+    background: linear-gradient(135deg, #0a1538 0%, #1e3a8a 50%, #2e3f72 75%, #D4AF37 130%);
+  }
+
+  /* Subtle masonic checker pattern overlay (use as utility on top of bg) */
+  .bg-pattern-luxe {
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(30, 58, 138, 0.05) 0%, transparent 50%);
+  }
+
+  /* Gold text shimmer */
+  .text-gold-shine {
+    background: linear-gradient(135deg, #D4AF37 0%, #E8C76B 50%, #B8862C 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Hairline gold divider */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.6) 50%, transparent 100%);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Glass / frosted backdrop */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/40;
+  }
+
+  .glass-dark {
+    @apply bg-ink-900/80 backdrop-blur-xl border border-white/10;
+  }
 }
 
-/* Custom components */
+/* ─────────────────────────────────────────────────────────
+   Component classes
+─────────────────────────────────────────────────────────── */
 @layer components {
+  /* ── Buttons ──────────────────────────────────────────── */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium tracking-luxe transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ivory-50 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply btn text-white bg-primary-800 hover:bg-primary-900 active:bg-primary-950 focus:ring-primary-700 shadow-luxe hover:shadow-luxe-lg;
   }
-  
+
   .btn-secondary {
-    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+    @apply btn bg-white text-ink-800 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 focus:ring-ink-300 shadow-sm;
   }
-  
+
+  /* The signature "luxury" button: deep navy with gold border that fills on hover */
   .btn-masonic {
-    @apply btn masonic-gradient text-white hover:opacity-90 focus:ring-primary-500;
+    @apply btn relative overflow-hidden text-white bg-primary-800 border border-gold-500/40 hover:border-gold-500 focus:ring-gold-500 shadow-luxe hover:shadow-gold-glow transition-all;
   }
-  
+
+  .btn-gold {
+    @apply btn text-ink-900 bg-gold-gradient hover:brightness-110 focus:ring-gold-500 shadow-gold hover:shadow-gold-glow font-semibold;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-700 hover:bg-ink-100 hover:text-ink-900 focus:ring-ink-300;
+  }
+
+  /* ── Cards ────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+    @apply bg-white rounded-xl shadow-sm border border-ink-100 p-5 transition-shadow duration-200;
   }
-  
+
+  .card-luxe {
+    @apply bg-white rounded-2xl shadow-luxe border border-ink-100 p-6 relative;
+  }
+
+  /* Premium card with gold top border accent */
+  .card-premium {
+    @apply card-luxe relative overflow-hidden;
+  }
+
+  .card-premium::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-1 bg-gold-gradient;
+  }
+
+  /* Dark luxury card (e.g. hero, stats) */
+  .card-dark {
+    @apply rounded-2xl shadow-luxe-lg p-6 text-white relative overflow-hidden bg-navy-gradient;
+  }
+
+  /* ── Inputs ───────────────────────────────────────────── */
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-2.5 bg-white border border-ink-200 rounded-lg text-ink-900 placeholder-ink-400 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-400/40 focus:border-gold-500;
+  }
+
+  .input-dark {
+    @apply w-full px-4 py-2.5 bg-ink-900/50 border border-white/10 rounded-lg text-white placeholder-ink-400 transition-colors focus:outline-none focus:ring-2 focus:ring-gold-400/40 focus:border-gold-500;
+  }
+
+  /* ── Badges / pills ──────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium tracking-luxe;
+  }
+
+  .badge-gold {
+    @apply badge bg-gold-100 text-gold-800 border border-gold-200;
+  }
+
+  .badge-navy {
+    @apply badge bg-primary-100 text-primary-800 border border-primary-200;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-50 text-amber-700 border border-amber-200;
+  }
+
+  /* ── Section headings ─────────────────────────────────── */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-regal text-gold-700;
+  }
+
+  /* ── Decorative monogram square (replaces lucide Square) ─ */
+  .monogram {
+    @apply relative inline-flex items-center justify-center w-10 h-10 rounded-md bg-navy-gradient text-gold-400 font-serif font-bold;
+    box-shadow: 0 2px 12px -2px rgba(10, 21, 56, 0.4), inset 0 0 0 1px rgba(212, 175, 55, 0.25);
+  }
+
+  .monogram::before {
+    content: '';
+    @apply absolute inset-0.5 rounded border border-gold-500/30 pointer-events-none;
   }
 }
 
-/* PWA specific styles */
+/* ─────────────────────────────────────────────────────────
+   PWA specific
+─────────────────────────────────────────────────────────── */
 @media (display-mode: standalone) {
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Reduce motion
+─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
