@@ -238,6 +238,8 @@ export class MessagingService {
 
   /**
    * Subscribe to conversation updates (for conversation list)
+   * Fires when ANY new message is sent — the page handler should
+   * decide whether to refetch (cheap query) or filter client-side.
    */
   static subscribeToConversations(
     userId: string,
@@ -248,9 +250,20 @@ export class MessagingService {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'messages',
+        },
+        () => {
+          onUpdate();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'conversations',
         },
         () => {
           onUpdate();
