@@ -8,6 +8,7 @@ import {
   type AdminLodge,
 } from '@/lib/admin';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AddressAutocomplete, type AddressResult } from '@/components/AddressAutocomplete';
 import {
   Shield,
   Users,
@@ -861,25 +862,38 @@ function AdminConsoleContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
-                <input type="text" value={createLodgeForm.address} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, address: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Street address (optional)" />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Address <span className="text-gray-400 font-normal">(auto-fills coords & city)</span>
+                </label>
+                <AddressAutocomplete
+                  value={createLodgeForm.address}
+                  onChange={(addr) => setCreateLodgeForm((f) => ({ ...f, address: addr }))}
+                  onSelect={(result: AddressResult) => {
+                    setCreateLodgeForm((f) => ({
+                      ...f,
+                      address: result.road || f.address,
+                      city: result.city || f.city,
+                      country: result.country || f.country,
+                      lat: String(result.lat),
+                      lng: String(result.lng),
+                    }));
+                  }}
+                  placeholder="Search for the lodge address…"
+                />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Latitude</label>
-                  <input type="number" value={createLodgeForm.lat} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, lat: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Optional" step="any" />
+              {(createLodgeForm.lat || createLodgeForm.lng) && (
+                <div className="text-[11px] text-ink-500 bg-ivory-100 border border-ink-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <span className="font-medium text-gold-700">📍 Geotag:</span>
+                  <span>{createLodgeForm.lat}, {createLodgeForm.lng}</span>
+                  <button
+                    type="button"
+                    onClick={() => setCreateLodgeForm((f) => ({ ...f, lat: '', lng: '' }))}
+                    className="ml-auto text-ink-400 hover:text-red-600 text-xs"
+                  >
+                    Clear
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Longitude</label>
-                  <input type="number" value={createLodgeForm.lng} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, lng: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Optional" step="any" />
-                </div>
-              </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>
@@ -977,25 +991,38 @@ function AdminConsoleContent() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
-                <input type="text" value={editLodgeForm.address} onChange={(e) => setEditLodgeForm((f) => ({ ...f, address: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Street address (optional)" />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Address <span className="text-gray-400 font-normal">(auto-fills coords & city)</span>
+                </label>
+                <AddressAutocomplete
+                  value={editLodgeForm.address}
+                  onChange={(addr) => setEditLodgeForm((f) => ({ ...f, address: addr }))}
+                  onSelect={(result: AddressResult) => {
+                    setEditLodgeForm((f) => ({
+                      ...f,
+                      address: result.road || f.address,
+                      city: result.city || f.city,
+                      country: result.country || f.country,
+                      lat: String(result.lat),
+                      lng: String(result.lng),
+                    }));
+                  }}
+                  placeholder="Search for a new address…"
+                />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Latitude</label>
-                  <input type="number" value={editLodgeForm.lat} onChange={(e) => setEditLodgeForm((f) => ({ ...f, lat: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Optional" step="any" />
+              {(editLodgeForm.lat || editLodgeForm.lng) && (
+                <div className="text-[11px] text-ink-500 bg-ivory-100 border border-ink-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <span className="font-medium text-gold-700">📍 Geotag:</span>
+                  <span>{editLodgeForm.lat}, {editLodgeForm.lng}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditLodgeForm((f) => ({ ...f, lat: '', lng: '' }))}
+                    className="ml-auto text-ink-400 hover:text-red-600 text-xs"
+                  >
+                    Clear
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Longitude</label>
-                  <input type="number" value={editLodgeForm.lng} onChange={(e) => setEditLodgeForm((f) => ({ ...f, lng: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Optional" step="any" />
-                </div>
-              </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>

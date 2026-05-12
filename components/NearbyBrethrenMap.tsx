@@ -148,39 +148,69 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
           markersRef.current.push(marker);
         });
 
-        // Add markers for nearby lodges
+        // Add markers for nearby lodges — gold pin with classical building icon
         (lodgeData || []).forEach((lodge: any) => {
           if (!lodge.lat || !lodge.lng) return;
 
+          // Wrapper with pin-style drop shape
           const lodgeEl = document.createElement('div');
           lodgeEl.className = 'lodge-marker';
           lodgeEl.style.cssText = `
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
-            border: 2px solid white;
-            border-radius: 6px;
+            position: relative;
+            width: 44px;
+            height: 52px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 4px 6px rgba(10,21,56,0.35));
+            transform-origin: bottom center;
+            transition: transform 0.15s ease;
           `;
 
-          const lodgeIcon = document.createElement('div');
-          lodgeIcon.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
+          // Hover lift effect
+          lodgeEl.addEventListener('mouseenter', () => {
+            lodgeEl.style.transform = 'translateY(-2px) scale(1.05)';
+          });
+          lodgeEl.addEventListener('mouseleave', () => {
+            lodgeEl.style.transform = 'translateY(0) scale(1)';
+          });
+
+          // SVG: gold pin shape with classical lodge / temple icon (columns + pediment)
+          lodgeEl.innerHTML = `
+            <svg width="44" height="52" viewBox="0 0 44 52" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="goldGrad-${lodge.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E8C76B"/>
+                  <stop offset="50%" stop-color="#D4AF37"/>
+                  <stop offset="100%" stop-color="#B8862C"/>
+                </linearGradient>
+              </defs>
+              <!-- Pin shape -->
+              <path
+                d="M22 0 C9.8 0 0 9.6 0 21.5 C0 36 22 52 22 52 C22 52 44 36 44 21.5 C44 9.6 34.2 0 22 0 Z"
+                fill="url(#goldGrad-${lodge.id})"
+                stroke="#0a1538"
+                stroke-width="1.5"
+              />
+              <!-- Classical building / temple icon centered in the pin head -->
+              <!-- Roof triangle (pediment) -->
+              <path d="M11 17 L22 9 L33 17 Z" fill="#0a1538"/>
+              <!-- Architrave (horizontal bar under roof) -->
+              <rect x="10" y="17" width="24" height="2" fill="#0a1538"/>
+              <!-- Columns -->
+              <rect x="12" y="20" width="2.5" height="10" fill="#0a1538"/>
+              <rect x="17" y="20" width="2.5" height="10" fill="#0a1538"/>
+              <rect x="22" y="20" width="2.5" height="10" fill="#0a1538"/>
+              <rect x="27" y="20" width="2.5" height="10" fill="#0a1538"/>
+              <!-- Base / stylobate -->
+              <rect x="10" y="30" width="24" height="2.5" fill="#0a1538"/>
             </svg>
           `;
-          lodgeEl.appendChild(lodgeIcon);
 
           lodgeEl.addEventListener('click', () => {
             setSelectedLodge(lodge);
           });
 
-          const lodgeMarker = new Marker({ element: lodgeEl })
+          // Anchor the marker at the tip of the pin (bottom)
+          const lodgeMarker = new Marker({ element: lodgeEl, anchor: 'bottom' })
             .setLngLat([lodge.lng, lodge.lat])
             .addTo(map.current!);
           markersRef.current.push(lodgeMarker);
@@ -260,45 +290,44 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
 
       {/* Selected Lodge Info Panel */}
       {selectedLodge && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: 'linear-gradient(135deg, #92400e 0%, #d97706 100%)',
-                  borderRadius: 6,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
+        <div className="bg-white border border-gold-200 rounded-xl p-4 shadow-luxe">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {/* Classical building icon in a gold gradient square */}
+              <div className="w-11 h-11 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold flex-shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  {/* Pediment / roof */}
+                  <path d="M3 9 L12 3 L21 9 Z" fill="#0a1538"/>
+                  {/* Architrave */}
+                  <rect x="2" y="9" width="20" height="1.5" fill="#0a1538"/>
+                  {/* Columns */}
+                  <rect x="4.5" y="11" width="2" height="8" fill="#0a1538"/>
+                  <rect x="8.5" y="11" width="2" height="8" fill="#0a1538"/>
+                  <rect x="13.5" y="11" width="2" height="8" fill="#0a1538"/>
+                  <rect x="17.5" y="11" width="2" height="8" fill="#0a1538"/>
+                  {/* Stylobate */}
+                  <rect x="2" y="19" width="20" height="2" fill="#0a1538"/>
                 </svg>
               </div>
-              <div>
-                <p className="font-semibold text-gray-900">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-ink-900 truncate">
                   {selectedLodge.name}
                   {selectedLodge.number ? ` #${selectedLodge.number}` : ''}
                 </p>
                 {selectedLodge.city && (
-                  <p className="text-sm text-gray-600 flex items-center">
-                    <MapPin className="h-3 w-3 mr-1" />
+                  <p className="text-sm text-ink-600 flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-gold-600" />
                     {selectedLodge.city}
                   </p>
                 )}
                 {selectedLodge.address && (
-                  <p className="text-sm text-gray-500">{selectedLodge.address}</p>
+                  <p className="text-xs text-ink-500 mt-0.5 truncate">{selectedLodge.address}</p>
                 )}
               </div>
             </div>
             <button
               onClick={() => setSelectedLodge(null)}
-              className="text-gray-400 hover:text-gray-600 ml-2"
+              className="text-ink-400 hover:text-ink-700 transition-colors flex-shrink-0"
               aria-label="Close lodge info"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
