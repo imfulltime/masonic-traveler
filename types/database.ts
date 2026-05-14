@@ -466,6 +466,7 @@ export type Database = {
           id: string
           lat: number
           lng: number
+          meeting_schedule: string | null
           name: string
           number: string
           updated_at: string | null
@@ -482,6 +483,7 @@ export type Database = {
           id?: string
           lat: number
           lng: number
+          meeting_schedule?: string | null
           name: string
           number: string
           updated_at?: string | null
@@ -498,6 +500,7 @@ export type Database = {
           id?: string
           lat?: number
           lng?: number
+          meeting_schedule?: string | null
           name?: string
           number?: string
           updated_at?: string | null

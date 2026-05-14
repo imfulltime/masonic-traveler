@@ -40,6 +40,7 @@ const baseEvent = (overrides: Partial<EventWithDistance> = {}): EventWithDistanc
     contact_phone: null,
     created_by: 'user-1',
     updated_at: new Date().toISOString(),
+    meeting_schedule: null,
   },
   rsvp_count: 0,
   user_rsvp: undefined,

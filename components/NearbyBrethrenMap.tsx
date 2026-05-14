@@ -336,6 +336,31 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
               </svg>
             </button>
           </div>
+
+          {/* Quick actions — View details + Get directions */}
+          <div className="mt-3 pt-3 border-t border-gold-100 flex flex-wrap gap-2">
+            <button
+              onClick={() => router.push(`/dashboard/lodges/${selectedLodge.id}`)}
+              className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-primary-800 hover:bg-primary-900 text-white text-xs font-semibold tracking-luxe transition-colors"
+            >
+              View Lodge
+            </button>
+            {selectedLodge.lat && selectedLodge.lng && (
+              <a
+                href={(() => {
+                  const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
+                  return isIOS
+                    ? `maps://?daddr=${selectedLodge.lat},${selectedLodge.lng}&q=${encodeURIComponent(selectedLodge.name || '')}`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${selectedLodge.lat},${selectedLodge.lng}`;
+                })()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-gold-gradient hover:brightness-110 text-ink-900 text-xs font-semibold tracking-luxe text-center transition-all shadow-gold"
+              >
+                Get Directions
+              </a>
+            )}
+          </div>
         </div>
       )}
 
@@ -418,41 +443,39 @@ export function NearbyBrethrenMap({ userLocation }: NearbyBrethrenMapProps) {
         ) : (
           <div className="space-y-2">
             {nearbyLodges.map((lodge) => (
-              <div
+              <button
                 key={lodge.id}
-                className="card flex items-center space-x-3 cursor-pointer hover:bg-amber-50 transition-colors"
-                onClick={() => setSelectedLodge(lodge)}
+                onClick={() => router.push(`/dashboard/lodges/${lodge.id}`)}
+                className="card w-full text-left flex items-center gap-3 cursor-pointer hover:shadow-luxe hover:border-gold-200 transition-all group"
               >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    background: 'linear-gradient(135deg, #92400e 0%, #d97706 100%)',
-                    borderRadius: 5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
+                {/* Classical temple icon — gold gradient square */}
+                <div className="w-10 h-10 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9 L12 3 L21 9 Z" fill="#0a1538"/>
+                    <rect x="2" y="9" width="20" height="1.5" fill="#0a1538"/>
+                    <rect x="4.5" y="11" width="2" height="8" fill="#0a1538"/>
+                    <rect x="8.5" y="11" width="2" height="8" fill="#0a1538"/>
+                    <rect x="13.5" y="11" width="2" height="8" fill="#0a1538"/>
+                    <rect x="17.5" y="11" width="2" height="8" fill="#0a1538"/>
+                    <rect x="2" y="19" width="20" height="2" fill="#0a1538"/>
                   </svg>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-ink-900 group-hover:text-gold-700 transition-colors truncate">
                     {lodge.name}
                     {lodge.number ? ` #${lodge.number}` : ''}
                   </p>
                   {lodge.city && (
-                    <p className="text-sm text-gray-500 flex items-center">
-                      <MapPin className="h-3 w-3 mr-1" />
+                    <p className="text-sm text-ink-500 flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-gold-600" />
                       {lodge.city}
                     </p>
                   )}
                 </div>
-              </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-300 group-hover:text-gold-600 transition-colors flex-shrink-0">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
             ))}
           </div>
         )}

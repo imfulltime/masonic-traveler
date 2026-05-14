@@ -214,6 +214,7 @@ export class AdminService {
     lng?: number;
     contact_email?: string;
     contact_phone?: string;
+    meeting_schedule?: string;
   }): Promise<void> {
     const session = await supabase.auth.getSession();
     const userId = session.data.session?.user?.id;
@@ -230,6 +231,7 @@ export class AdminService {
       lng: data.lng ?? 0,
       contact_email: data.contact_email ?? null,
       contact_phone: data.contact_phone ?? null,
+      meeting_schedule: data.meeting_schedule ?? null,
       ...(userId ? { created_by: userId } : {}),
     } as any);
 
@@ -253,6 +255,7 @@ export class AdminService {
       lng: number;
       contact_email: string;
       contact_phone: string;
+      meeting_schedule: string;
     }>
   ): Promise<void> {
     const { error } = await supabase

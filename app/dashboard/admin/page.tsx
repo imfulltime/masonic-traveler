@@ -298,12 +298,14 @@ function AdminConsoleContent() {
     name: string; number: string; grand_lodge: string; district: string;
     address: string; city: string; country: string;
     lat: string; lng: string; contact_email: string; contact_phone: string;
+    meeting_schedule: string;
   };
 
   const emptyLodgeForm: LodgeForm = {
     name: '', number: '', grand_lodge: '', district: '',
     address: '', city: '', country: '',
     lat: '', lng: '', contact_email: '', contact_phone: '',
+    meeting_schedule: '',
   };
 
   const [showCreateLodgeModal, setShowCreateLodgeModal] = useState(false);
@@ -456,6 +458,7 @@ function AdminConsoleContent() {
         lng: createLodgeForm.lng ? parseFloat(createLodgeForm.lng) : undefined,
         contact_email: createLodgeForm.contact_email.trim() || undefined,
         contact_phone: createLodgeForm.contact_phone.trim() || undefined,
+        meeting_schedule: createLodgeForm.meeting_schedule.trim() || undefined,
       });
       setShowCreateLodgeModal(false);
       setCreateLodgeForm(emptyLodgeForm);
@@ -484,6 +487,7 @@ function AdminConsoleContent() {
       lng: (lodge as any).lng != null ? String((lodge as any).lng) : '',
       contact_email: (lodge as any).contact_email ?? '',
       contact_phone: (lodge as any).contact_phone ?? '',
+      meeting_schedule: (lodge as any).meeting_schedule ?? '',
     });
   };
 
@@ -510,6 +514,7 @@ function AdminConsoleContent() {
         lng: editLodgeForm.lng ? parseFloat(editLodgeForm.lng) : 0,
         contact_email: editLodgeForm.contact_email.trim(),
         contact_phone: editLodgeForm.contact_phone.trim(),
+        meeting_schedule: editLodgeForm.meeting_schedule.trim(),
       });
       setEditingLodge(null);
       await loadLodges();
@@ -894,6 +899,18 @@ function AdminConsoleContent() {
                   </button>
                 </div>
               )}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Meeting Schedule <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={createLodgeForm.meeting_schedule}
+                  onChange={(e) => setCreateLodgeForm((f) => ({ ...f, meeting_schedule: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g. 2nd Tuesday of every month at 7:30 PM"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>
@@ -1023,6 +1040,18 @@ function AdminConsoleContent() {
                   </button>
                 </div>
               )}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Meeting Schedule <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editLodgeForm.meeting_schedule}
+                  onChange={(e) => setEditLodgeForm((f) => ({ ...f, meeting_schedule: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g. 2nd Tuesday of every month at 7:30 PM"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>
