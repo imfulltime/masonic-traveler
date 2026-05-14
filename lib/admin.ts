@@ -24,9 +24,17 @@ export interface AdminLodge {
   name: string;
   number: string;
   grand_lodge: string;
-  district: string;
+  district: string | null;
+  address: string | null;
   city: string;
+  state: string | null;
+  zip_code: string | null;
   country: string;
+  lat: number | null;
+  lng: number | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  meeting_schedule: string | null;
   member_count?: number;
 }
 
@@ -192,11 +200,11 @@ export class AdminService {
   static async getAllLodges(): Promise<AdminLodge[]> {
     const { data, error } = await supabase
       .from('lodges')
-      .select('id, name, number, grand_lodge, district, city, country')
+      .select('id, name, number, grand_lodge, district, address, city, state, zip_code, country, lat, lng, contact_email, contact_phone, meeting_schedule')
       .order('name', { ascending: true });
 
     if (error) throw error;
-    return (data || []) as AdminLodge[];
+    return (data || []) as unknown as AdminLodge[];
   }
 
   /**
@@ -209,6 +217,8 @@ export class AdminService {
     district?: string;
     address?: string;
     city: string;
+    state?: string;
+    zip_code?: string;
     country: string;
     lat?: number;
     lng?: number;
@@ -226,6 +236,8 @@ export class AdminService {
       district: data.district ?? '',
       address: data.address ?? '',
       city: data.city,
+      state: data.state ?? null,
+      zip_code: data.zip_code ?? null,
       country: data.country,
       lat: data.lat ?? 0,
       lng: data.lng ?? 0,
@@ -250,6 +262,8 @@ export class AdminService {
       district: string;
       address: string;
       city: string;
+      state: string;
+      zip_code: string;
       country: string;
       lat: number;
       lng: number;

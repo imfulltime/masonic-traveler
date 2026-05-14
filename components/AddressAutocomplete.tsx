@@ -8,6 +8,8 @@ export interface AddressResult {
   lat: number;
   lng: number;
   city: string;
+  state: string;
+  zip_code: string;
   country: string;
   road?: string;
 }
@@ -28,6 +30,10 @@ interface NominatimSuggestion {
     municipality?: string;
     county?: string;
     state?: string;
+    state_district?: string;
+    region?: string;
+    province?: string;
+    postcode?: string;
     country?: string;
   };
 }
@@ -123,6 +129,13 @@ export function AddressAutocomplete({
       addr.neighbourhood ||
       addr.county ||
       '';
+    const state =
+      addr.state ||
+      addr.region ||
+      addr.province ||
+      addr.state_district ||
+      '';
+    const zip_code = addr.postcode || '';
     const country = addr.country || '';
     const road = addr.house_number && addr.road
       ? `${addr.house_number} ${addr.road}`
@@ -133,6 +146,8 @@ export function AddressAutocomplete({
       lat: parseFloat(s.lat),
       lng: parseFloat(s.lon),
       city,
+      state,
+      zip_code,
       country,
       road,
     };

@@ -31,6 +31,8 @@ interface Lodge {
   district: string | null;
   address: string | null;
   city: string;
+  state: string | null;
+  zip_code: string | null;
   country: string;
   lat: number | null;
   lng: number | null;
@@ -94,7 +96,7 @@ export default function LodgeDetailPage() {
           await Promise.all([
             supabase
               .from('lodges')
-              .select('id, name, number, grand_lodge, district, address, city, country, lat, lng, contact_email, contact_phone, meeting_schedule')
+              .select('id, name, number, grand_lodge, district, address, city, state, zip_code, country, lat, lng, contact_email, contact_phone, meeting_schedule')
               .eq('id', id)
               .single(),
             supabase
@@ -214,7 +216,12 @@ export default function LodgeDetailPage() {
     );
   }
 
-  const fullAddress = [lodge.address, lodge.city, lodge.country].filter(Boolean).join(', ');
+  // Compose a clean address line: "123 Main St, City, State 12345, Country"
+  const cityStatePart = [lodge.city, lodge.state].filter(Boolean).join(', ')
+    + (lodge.zip_code ? ` ${lodge.zip_code}` : '');
+  const fullAddress = [lodge.address, cityStatePart, lodge.country]
+    .filter((p) => p && p.trim())
+    .join(', ');
   const hasGeotag = lodge.lat !== null && lodge.lng !== null && (lodge.lat !== 0 || lodge.lng !== 0);
 
   return (

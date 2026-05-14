@@ -41,6 +41,8 @@ const baseEvent = (overrides: Partial<EventWithDistance> = {}): EventWithDistanc
     created_by: 'user-1',
     updated_at: new Date().toISOString(),
     meeting_schedule: null,
+    state: null,
+    zip_code: null,
   },
   rsvp_count: 0,
   user_rsvp: undefined,

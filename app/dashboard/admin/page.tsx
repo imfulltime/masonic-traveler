@@ -296,14 +296,14 @@ function AdminConsoleContent() {
 
   type LodgeForm = {
     name: string; number: string; grand_lodge: string; district: string;
-    address: string; city: string; country: string;
+    address: string; city: string; state: string; zip_code: string; country: string;
     lat: string; lng: string; contact_email: string; contact_phone: string;
     meeting_schedule: string;
   };
 
   const emptyLodgeForm: LodgeForm = {
     name: '', number: '', grand_lodge: '', district: '',
-    address: '', city: '', country: '',
+    address: '', city: '', state: '', zip_code: '', country: '',
     lat: '', lng: '', contact_email: '', contact_phone: '',
     meeting_schedule: '',
   };
@@ -453,6 +453,8 @@ function AdminConsoleContent() {
         district: createLodgeForm.district.trim() || undefined,
         address: createLodgeForm.address.trim() || undefined,
         city: createLodgeForm.city.trim(),
+        state: createLodgeForm.state.trim() || undefined,
+        zip_code: createLodgeForm.zip_code.trim() || undefined,
         country: createLodgeForm.country.trim(),
         lat: createLodgeForm.lat ? parseFloat(createLodgeForm.lat) : undefined,
         lng: createLodgeForm.lng ? parseFloat(createLodgeForm.lng) : undefined,
@@ -480,14 +482,16 @@ function AdminConsoleContent() {
       number: lodge.number,
       grand_lodge: lodge.grand_lodge,
       district: lodge.district ?? '',
-      address: (lodge as any).address ?? '',
+      address: lodge.address ?? '',
       city: lodge.city,
+      state: lodge.state ?? '',
+      zip_code: lodge.zip_code ?? '',
       country: lodge.country,
-      lat: (lodge as any).lat != null ? String((lodge as any).lat) : '',
-      lng: (lodge as any).lng != null ? String((lodge as any).lng) : '',
-      contact_email: (lodge as any).contact_email ?? '',
-      contact_phone: (lodge as any).contact_phone ?? '',
-      meeting_schedule: (lodge as any).meeting_schedule ?? '',
+      lat: lodge.lat != null ? String(lodge.lat) : '',
+      lng: lodge.lng != null ? String(lodge.lng) : '',
+      contact_email: lodge.contact_email ?? '',
+      contact_phone: lodge.contact_phone ?? '',
+      meeting_schedule: lodge.meeting_schedule ?? '',
     });
   };
 
@@ -509,6 +513,8 @@ function AdminConsoleContent() {
         district: editLodgeForm.district.trim(),
         address: editLodgeForm.address.trim(),
         city: editLodgeForm.city.trim(),
+        state: editLodgeForm.state.trim(),
+        zip_code: editLodgeForm.zip_code.trim(),
         country: editLodgeForm.country.trim(),
         lat: editLodgeForm.lat ? parseFloat(editLodgeForm.lat) : 0,
         lng: editLodgeForm.lng ? parseFloat(editLodgeForm.lng) : 0,
@@ -852,23 +858,9 @@ function AdminConsoleContent() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Optional" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
-                  <input type="text" value={createLodgeForm.city} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, city: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="City" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Country <span className="text-red-500">*</span></label>
-                  <input type="text" value={createLodgeForm.country} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, country: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Country" />
-                </div>
-              </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Address <span className="text-gray-400 font-normal">(auto-fills coords & city)</span>
+                  Address <span className="text-gray-400 font-normal">(auto-fills city, state, ZIP, coords)</span>
                 </label>
                 <AddressAutocomplete
                   value={createLodgeForm.address}
@@ -878,6 +870,8 @@ function AdminConsoleContent() {
                       ...f,
                       address: result.road || f.address,
                       city: result.city || f.city,
+                      state: result.state || f.state,
+                      zip_code: result.zip_code || f.zip_code,
                       country: result.country || f.country,
                       lat: String(result.lat),
                       lng: String(result.lng),
@@ -885,6 +879,34 @@ function AdminConsoleContent() {
                   }}
                   placeholder="Search for the lodge address…"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
+                  <input type="text" value={createLodgeForm.city} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, city: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="City" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">State / Province</label>
+                  <input type="text" value={createLodgeForm.state} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, state: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="State or province" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
+                  <input type="text" value={createLodgeForm.zip_code} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, zip_code: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="ZIP code" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Country <span className="text-red-500">*</span></label>
+                  <input type="text" value={createLodgeForm.country} onChange={(e) => setCreateLodgeForm((f) => ({ ...f, country: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Country" />
+                </div>
               </div>
               {(createLodgeForm.lat || createLodgeForm.lng) && (
                 <div className="text-[11px] text-ink-500 bg-ivory-100 border border-ink-100 rounded-lg px-3 py-2 flex items-center gap-2">
@@ -993,23 +1015,9 @@ function AdminConsoleContent() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Optional" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
-                  <input type="text" value={editLodgeForm.city} onChange={(e) => setEditLodgeForm((f) => ({ ...f, city: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="City" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Country <span className="text-red-500">*</span></label>
-                  <input type="text" value={editLodgeForm.country} onChange={(e) => setEditLodgeForm((f) => ({ ...f, country: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Country" />
-                </div>
-              </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Address <span className="text-gray-400 font-normal">(auto-fills coords & city)</span>
+                  Address <span className="text-gray-400 font-normal">(auto-fills city, state, ZIP, coords)</span>
                 </label>
                 <AddressAutocomplete
                   value={editLodgeForm.address}
@@ -1019,6 +1027,8 @@ function AdminConsoleContent() {
                       ...f,
                       address: result.road || f.address,
                       city: result.city || f.city,
+                      state: result.state || f.state,
+                      zip_code: result.zip_code || f.zip_code,
                       country: result.country || f.country,
                       lat: String(result.lat),
                       lng: String(result.lng),
@@ -1026,6 +1036,34 @@ function AdminConsoleContent() {
                   }}
                   placeholder="Search for a new address…"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">City <span className="text-red-500">*</span></label>
+                  <input type="text" value={editLodgeForm.city} onChange={(e) => setEditLodgeForm((f) => ({ ...f, city: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="City" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">State / Province</label>
+                  <input type="text" value={editLodgeForm.state} onChange={(e) => setEditLodgeForm((f) => ({ ...f, state: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="State or province" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
+                  <input type="text" value={editLodgeForm.zip_code} onChange={(e) => setEditLodgeForm((f) => ({ ...f, zip_code: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="ZIP code" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Country <span className="text-red-500">*</span></label>
+                  <input type="text" value={editLodgeForm.country} onChange={(e) => setEditLodgeForm((f) => ({ ...f, country: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Country" />
+                </div>
               </div>
               {(editLodgeForm.lat || editLodgeForm.lng) && (
                 <div className="text-[11px] text-ink-500 bg-ivory-100 border border-ink-100 rounded-lg px-3 py-2 flex items-center gap-2">
